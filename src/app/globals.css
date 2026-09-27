@@ -1,0 +1,142 @@
+@import "tailwindcss";
+
+/* "High-End Boardroom", light edition: warm paper, slate ink, restrained gold.
+   The graphite scale is semantic (950 = surfaces … 100 = primary text), so it
+   runs light → dark here. */
+@theme {
+  --color-ink: #14171d;
+  --color-paper: #f7f5f0;
+  --color-graphite-950: #ffffff;
+  --color-graphite-900: #f5f3ee;
+  --color-graphite-800: #e5e1d8;
+  --color-graphite-700: #d4cfc4;
+  --color-graphite-600: #9c978c;
+  --color-graphite-400: #6a6e77;
+  --color-graphite-300: #454a54;
+  --color-graphite-100: #16191f;
+  --color-navy-900: #edf1f8;
+  --color-navy-800: #e1e8f3;
+  --color-navy-700: #cdd8ea;
+  --color-gold-300: #7f5d22;
+  --color-gold-400: #a3792f;
+  --color-gold-500: #c49a4c;
+  --color-gold-600: #9a7433;
+  --color-signal-red: #b5473a;
+  --color-signal-amber: #a9731a;
+  --color-signal-green: #3d8656;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-display), ui-serif, Georgia, serif;
+
+  --animate-reveal: reveal 480ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-breathe: breathe 4s ease-in-out infinite;
+}
+
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(8px); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+/* 4-second in/out — paced to a calming breath, not a ticking clock. */
+@keyframes breathe {
+  0%, 100% { transform: scale(0.85); opacity: 0.45; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
+html {
+  color-scheme: light;
+}
+
+/* User-selectable themes (see ThemePicker). Light is the @theme default above;
+   each theme only swaps the tokens, so every component follows automatically.
+   `--color-ink` stays dark everywhere: it's the text colour on gold buttons. */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --color-paper: #0f1115;
+  --color-graphite-950: #171a20;
+  --color-graphite-900: #1e222a;
+  --color-graphite-800: #2b3039;
+  --color-graphite-700: #3b414c;
+  --color-graphite-600: #6a717d;
+  --color-graphite-400: #9ba1ab;
+  --color-graphite-300: #c5c9cf;
+  --color-graphite-100: #f2f0ea;
+  --color-navy-900: #172034;
+  --color-navy-800: #1d2a42;
+  --color-navy-700: #263655;
+  --color-gold-300: #ead19c;
+  --color-gold-400: #dbb872;
+  --color-gold-500: #c9a45c;
+  --color-gold-600: #a8843f;
+  --color-signal-red: #e57a6a;
+  --color-signal-amber: #e3aa4f;
+  --color-signal-green: #6fc38d;
+}
+
+html[data-theme="sepia"] {
+  --color-paper: #f3ead5;
+  --color-graphite-950: #fbf5e7;
+  --color-graphite-900: #f0e6cf;
+  --color-graphite-800: #e0d2b2;
+  --color-graphite-700: #cfbd98;
+  --color-graphite-600: #9a8866;
+  --color-graphite-400: #6e5f47;
+  --color-graphite-300: #4c402f;
+  --color-graphite-100: #2a2117;
+  --color-navy-900: #efe2c4;
+  --color-navy-800: #e7d7b5;
+  --color-navy-700: #dbc8a0;
+}
+
+/* Maximum legibility: pure black on white, darker borders, deeper accents. */
+html[data-theme="contrast"] {
+  --color-paper: #ffffff;
+  --color-graphite-950: #ffffff;
+  --color-graphite-900: #f1f1f1;
+  --color-graphite-800: #8c8c8c;
+  --color-graphite-700: #5e5e5e;
+  --color-graphite-600: #454545;
+  --color-graphite-400: #262626;
+  --color-graphite-300: #111111;
+  --color-graphite-100: #000000;
+  --color-navy-900: #eef3ff;
+  --color-navy-800: #dde7ff;
+  --color-navy-700: #c3d3ff;
+  --color-gold-300: #573900;
+  --color-gold-400: #694500;
+  --color-gold-500: #b98a1e;
+  --color-gold-600: #694500;
+  --color-signal-red: #9e1b1b;
+  --color-signal-amber: #7a4800;
+  --color-signal-green: #1c6b37;
+}
+
+html[data-theme="dark"] body {
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgb(201 164 92 / 0.08), transparent 60%),
+    var(--color-paper);
+}
+
+html[data-theme="contrast"] body {
+  background: var(--color-paper);
+}
+
+body {
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgb(201 164 92 / 0.12), transparent 60%),
+    var(--color-paper);
+  color: var(--color-graphite-100);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgb(201 164 92 / 0.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
