@@ -26,6 +26,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               The CEO <span className="text-gold-500">Voice</span>
             </Link>
             <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-graphite-400">
+              <Link href="/leadership" className="transition hover:text-gold-400">
+                Leadership Practice
+              </Link>
               <Link href="/interview" className="transition hover:text-gold-400">
                 Interview Simulator
               </Link>

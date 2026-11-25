@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 const MODULES = [
+  { name: "Leadership Practice", href: "/leadership", status: "New", body: "A 10-minute daily leader workout: your interview answers, cheat-code recall, and thinking in threes." },
   { name: "Stumble-to-Flow Interview Simulator", href: "/interview", status: "Available", body: "Mock interviews with a Safety Net that catches you when you freeze." },
   { name: "Speaking Stage", href: "/stage", status: "New", body: "Learn speeches without a great memory, drill impromptu talks, and watch yourself back on camera." },
   { name: "CEO Mode", href: null, status: "Next", body: "Real-time filler, pace and authority coaching during live meetings." },
@@ -38,7 +39,7 @@ export default function Home() {
       </section>
 
       <section className="grid gap-px overflow-hidden rounded-lg border border-graphite-800 bg-graphite-800 sm:grid-cols-2">
-        {MODULES.map((m) => {
+        {MODULES.map((m, i) => {
           const inner = (
             <div className="h-full space-y-2 bg-graphite-950 p-6 transition group-hover:bg-graphite-900">
               <div className="flex items-center justify-between">
@@ -49,7 +50,7 @@ export default function Home() {
             </div>
           );
           return m.href ? (
-            <Link key={m.name} href={m.href} className="group">
+            <Link key={m.name} href={m.href} className={`group ${i === 0 ? "sm:col-span-2" : ""}`}>
               {inner}
             </Link>
           ) : (
