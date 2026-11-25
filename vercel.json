@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "schedules": {
+    "daily-practice-email": {
+      "schedule": "0 7 * * *",
+      "timezone": "America/Toronto",
+      "path": "/api/daily-practice",
+      "requestMethod": "GET"
+    }
+  }
+}
