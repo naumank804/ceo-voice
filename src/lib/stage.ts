@@ -69,7 +69,7 @@ function normalise(word: string): string {
   return word.toLowerCase().replace(/’/g, "'").replace(/'s$/, "");
 }
 
-function pickAnchors(text: string, max = 3): string[] {
+export function pickAnchors(text: string, max = 3): string[] {
   const found = new Map<string, { word: string; pos: number; score: number }>();
   for (const m of text.matchAll(WORD_RE)) {
     const raw = m[0].replace(/[-']+$/, "");

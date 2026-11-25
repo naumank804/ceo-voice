@@ -1,4 +1,6 @@
-import { anchorSpoken, type Beat, beatCoverage, COVERED, firstLetters } from "./stage";
+import { anchorSpoken, type Beat, beatCoverage, COVERED, firstLetters, pickAnchors } from "./stage";
+import { CRAFT_CARDS } from "./leadership-craft";
+import { stem, tokenize } from "./speech-metrics";
 
 // ── Answer cards ────────────────────────────────────────────────────────────
 //
@@ -18,20 +20,40 @@ export interface Pillar {
   cues: string[];
 }
 
+export type Category = "Business" | "Technical" | "Leadership" | "CV" | "Craft" | "Topic";
+/** Questions an interviewer asks. */
+export const INTERVIEW_CATEGORIES: Category[] = ["Business", "Technical", "Leadership", "CV"];
+/** Things a leader talks about: leadership craft and your own topics. */
+export const TALK_CATEGORIES: Category[] = ["Craft", "Topic"];
+export const CATEGORY_LABEL: Record<Category, string> = {
+  Business: "Business",
+  Technical: "Technical",
+  Leadership: "Leadership",
+  CV: "My CV",
+  Craft: "Leadership craft",
+  Topic: "My topics",
+};
+
 export interface AnswerCard {
   id: string;
+  category: Category;
   /** Short name for lists, e.g. "Delivery velocity". */
   topic: string;
   question: string;
   opening: string;
   pillars: Pillar[];
   close: string;
+  /** For topics: the original text you pasted, to re-read before practising. */
+  source?: string;
+  /** For CV questions: short phrases from the CV this question probes (used to highlight the CV). */
+  cvMatch?: string[];
   custom?: boolean;
 }
 
-export const DEFAULT_CARDS: AnswerCard[] = [
+const BASE_CARDS: AnswerCard[] = [
   {
     id: "about-me",
+    category: "Business",
     topic: "Tell me about yourself",
     question: "Tell me about yourself and your background.",
     opening: `I am a technology delivery and strategic alignment executive with over 20 years of experience leading enterprise digital transformation across Canadian financial institutions and insurance. My career is built on three core pillars.`,
@@ -62,6 +84,7 @@ export const DEFAULT_CARDS: AnswerCard[] = [
   },
   {
     id: "velocity",
+    category: "Technical",
     topic: "Delivery velocity",
     question: "How do you maintain high delivery velocity across multiple squads without compromising quality?",
     opening: `To maintain high delivery velocity across squads, I embed three core mechanisms into our delivery model.`,
@@ -92,6 +115,7 @@ export const DEFAULT_CARDS: AnswerCard[] = [
   },
   {
     id: "lead-leaders",
+    category: "Leadership",
     topic: "Leading other leaders",
     question: "You will be leading other senior managers and practice leads. How do you lead through other leaders and ensure accountability?",
     opening: `When leading other leaders, I focus on three simple principles.`,
@@ -122,6 +146,7 @@ export const DEFAULT_CARDS: AnswerCard[] = [
   },
   {
     id: "stakeholders",
+    category: "Business",
     topic: "Demanding stakeholders",
     question: "How do you handle demanding business partners who push for unrealistic deadlines or out-of-cycle scope?",
     opening: `When managing demanding stakeholders, my principle is simple: never just say no. Bring the data and offer trade-offs. I follow three steps.`,
@@ -152,6 +177,7 @@ export const DEFAULT_CARDS: AnswerCard[] = [
   },
   {
     id: "burnout",
+    category: "Leadership",
     topic: "Preventing burnout",
     question: "High-pressure digital environments can strain teams. How do you recognize burnout across your delivery squads, and what do you do to prevent it?",
     opening: `Preventing burnout is essential for sustaining long-term delivery velocity. I manage it through three actions.`,
@@ -182,6 +208,7 @@ export const DEFAULT_CARDS: AnswerCard[] = [
   },
   {
     id: "security",
+    category: "Technical",
     topic: "Risk & platform security",
     question: "How do you embed governance and security into fast-paced digital delivery without slowing down teams?",
     opening: `I treat security as an enabler of speed, not an afterthought. I balance delivery velocity and security through three practices.`,
@@ -212,6 +239,7 @@ export const DEFAULT_CARDS: AnswerCard[] = [
   },
   {
     id: "ai",
+    category: "Technical",
     topic: "Applied AI",
     question: "AI is on every executive roadmap. How do you approach implementing applied AI and automation practically in an enterprise?",
     opening: `My approach to enterprise AI is grounded in practical business value, not hype. I apply three clear rules.`,
@@ -242,6 +270,7 @@ export const DEFAULT_CARDS: AnswerCard[] = [
   },
   {
     id: "portfolio",
+    category: "Business",
     topic: "Managing a portfolio",
     question: "Tell me about your experience managing a technology portfolio rather than just individual projects.",
     opening: `Managing a technology portfolio is fundamentally about maximizing business value, managing capital, and optimizing systemic capacity across multiple initiatives. I focus on three core disciplines.`,
@@ -272,6 +301,7 @@ export const DEFAULT_CARDS: AnswerCard[] = [
   },
   {
     id: "business-case",
+    category: "Business",
     topic: "Business case & funding",
     question: "How do you approach business case development and funding decisions?",
     opening: `I treat business case development and funding as a continuous investment lifecycle, using three core principles.`,
@@ -302,6 +332,7 @@ export const DEFAULT_CARDS: AnswerCard[] = [
   },
   {
     id: "icb",
+    category: "Business",
     topic: "Investment & corporate banking",
     question: "What is your experience in the Investment and Corporate Banking space?",
     opening: `I bridge directly into Investment and Corporate Banking through three core enterprise capabilities.`,
@@ -332,6 +363,7 @@ export const DEFAULT_CARDS: AnswerCard[] = [
   },
   {
     id: "tradeoff",
+    category: "Technical",
     topic: "A technical trade-off",
     question: "Tell me about a technical trade-off you made and how you justified it to executive leadership.",
     opening: `During our platform modernization program, I managed a critical architectural trade-off.`,
@@ -362,6 +394,7 @@ export const DEFAULT_CARDS: AnswerCard[] = [
   },
   {
     id: "why-us",
+    category: "Business",
     topic: "Why this company?",
     question: "Why are you interested in {company}, and why this role specifically?",
     opening: `{Company} stands out to me for three reasons.`,
@@ -392,6 +425,7 @@ export const DEFAULT_CARDS: AnswerCard[] = [
   },
   {
     id: "your-questions",
+    category: "Business",
     topic: "Your questions for them",
     question: "We're near the end. Do you have any questions for us?",
     opening: `Yes, thank you. I have three questions.`,
@@ -420,7 +454,360 @@ export const DEFAULT_CARDS: AnswerCard[] = [
     ],
     close: `Thank you. This has been a great conversation, and I'm genuinely excited about the opportunity.`,
   },
+  // ── Technical ──
+  {
+    id: "cloud-migration",
+    category: "Technical",
+    topic: "Cloud migration",
+    question: "How would you approach migrating a legacy core platform to the cloud?",
+    opening: `I treat cloud migration as a business risk program, not just an infrastructure move. I run it in three stages.`,
+    pillars: [
+      {
+        key: "Assess",
+        tag: "6 Rs",
+        title: "Assess the Portfolio",
+        text: `First, Assess: We map every application and its dependencies, then decide the right path for each one: rehost, replatform, refactor, or retire. Not everything should move, and not everything should move the same way.`,
+        cues: ["assess", "rehost", "refactor", "retire", "dependencies"],
+      },
+      {
+        key: "Landing Zone",
+        tag: "Guardrails",
+        title: "Build a Secure Landing Zone",
+        text: `Second, Landing Zone: Before any workload moves, we build the foundation: identity and access, network segmentation, encryption, logging, and cost controls, all as code. That way security and compliance are built in, not bolted on.`,
+        cues: ["landing", "foundation", "encryption", "guardrails", "as code"],
+      },
+      {
+        key: "Waves",
+        tag: "Pilot first",
+        title: "Migrate in Waves",
+        text: `Third, Waves: We start with a low-risk pilot, prove performance and rollback, then migrate in planned waves. Critical systems move last, once the team and the tooling are proven.`,
+        cues: ["waves", "pilot", "rollback", "wave"],
+      },
+    ],
+    close: `That approach reduces risk, controls cost, and keeps the business running while we modernize.`,
+  },
+  {
+    id: "architecture",
+    category: "Technical",
+    topic: "Architecture decisions",
+    question: "How do you make and govern architecture decisions across many squads?",
+    opening: `I want squads to move fast without creating a patchwork of systems. I balance that through three practices.`,
+    pillars: [
+      {
+        key: "Principles",
+        tag: "Guardrails",
+        title: "Clear Principles",
+        text: `First, Principles: We agree a short set of architecture principles, like API-first, cloud-native, and secure by design. Squads decide freely inside those guardrails.`,
+        cues: ["principles", "guardrails", "api-first", "secure by design"],
+      },
+      {
+        key: "Decision Records",
+        tag: "ADRs",
+        title: "Lightweight Decision Records",
+        text: `Second, Decision Records: Significant decisions are written as short architecture decision records, with the options, the trade-offs, and the reason. A light review forum looks only at decisions that cross teams.`,
+        cues: ["decision records", "ADR", "review", "options"],
+      },
+      {
+        key: "Fitness",
+        tag: "Measure",
+        title: "Measure Architecture Health",
+        text: `Third, Fitness: We track measurable signals, like coupling between services, performance, and security findings, so architecture quality is visible, not a matter of opinion.`,
+        cues: ["fitness", "coupling", "measurable", "health"],
+      },
+    ],
+    close: `That keeps teams autonomous while the platform stays coherent and secure.`,
+  },
+  {
+    id: "incident",
+    category: "Technical",
+    topic: "Major production incident",
+    question: "Walk me through how you handle a major production incident.",
+    opening: `In a major incident, calm structure matters more than speed. I follow three steps.`,
+    pillars: [
+      {
+        key: "Stabilize",
+        tag: "Incident command",
+        title: "Stabilize First",
+        text: `First, Stabilize: We open an incident bridge with one clear incident commander. The priority is restoring service, through rollback, failover, or a workaround, before searching for the root cause.`,
+        cues: ["stabilize", "commander", "rollback", "failover", "restore"],
+      },
+      {
+        key: "Communicate",
+        tag: "Regular updates",
+        title: "Communicate on a Cadence",
+        text: `Second, Communicate: Business leaders, client teams, and where needed regulators get short, regular updates: what happened, the impact, and the next update time. Silence creates more pressure than bad news.`,
+        cues: ["communicate", "updates", "regulators", "cadence"],
+      },
+      {
+        key: "Learn",
+        tag: "Blameless review",
+        title: "Learn Without Blame",
+        text: `Third, Learn: Within days we run a blameless post-incident review, find the real root cause, and track the actions to closure, like better monitoring, automated tests, or a design fix.`,
+        cues: ["learn", "blameless", "root cause", "post-incident", "postmortem"],
+      },
+    ],
+    close: `That restores trust quickly and makes the platform stronger after every incident.`,
+  },
+  {
+    id: "engineering-metrics",
+    category: "Technical",
+    topic: "Measuring engineering performance",
+    question: "How do you measure the performance of your engineering and delivery teams?",
+    opening: `I measure what predicts good outcomes, not just activity. I look at three layers.`,
+    pillars: [
+      {
+        key: "Flow",
+        tag: "DORA",
+        title: "Delivery Flow",
+        text: `First, Flow: I use the DORA metrics: deployment frequency and lead time for changes. They show how quickly value moves from idea to production.`,
+        cues: ["flow", "DORA", "deployment frequency", "lead time"],
+      },
+      {
+        key: "Stability",
+        tag: "Change failure",
+        title: "Quality and Stability",
+        text: `Second, Stability: Change failure rate, time to restore service, and escaped defects. Speed without stability is not real velocity.`,
+        cues: ["stability", "change failure", "restore", "escaped"],
+      },
+      {
+        key: "Outcomes",
+        tag: "Business KPIs",
+        title: "Business Outcomes",
+        text: `Third, Outcomes: Every team links its work to a business measure, like client adoption, cycle-time savings, or cost to serve. Metrics are for learning, never for punishing teams.`,
+        cues: ["outcomes", "adoption", "business measure", "kpi"],
+      },
+    ],
+    close: `Together they tell me if we are fast, safe, and actually creating value.`,
+  },
+  {
+    id: "tech-debt",
+    category: "Technical",
+    topic: "Technical debt",
+    question: "How do you balance technical debt against new feature delivery?",
+    opening: `Technical debt is a business risk, so I manage it like one. I use three practices.`,
+    pillars: [
+      {
+        key: "Visible",
+        tag: "Debt register",
+        title: "Make It Visible",
+        text: `First, Make it Visible: We keep a technical debt register with the impact of each item in business terms, like slower releases, outage risk, or security exposure.`,
+        cues: ["visible", "register", "impact"],
+      },
+      {
+        key: "Capacity",
+        tag: "15–20%",
+        title: "Reserve Capacity",
+        text: `Second, Reserve Capacity: Each squad protects a fixed share of every sprint, typically fifteen to twenty percent, for debt and platform health, so it never waits for a perfect moment.`,
+        cues: ["capacity", "percent", "reserve", "protect"],
+      },
+      {
+        key: "Risk-Based",
+        tag: "Prioritize",
+        title: "Prioritize by Risk",
+        text: `Third, Risk-Based: We fix first what blocks delivery or creates security and regulatory exposure. Debt that costs nothing today can wait.`,
+        cues: ["risk", "prioritize", "exposure", "regulatory"],
+      },
+    ],
+    close: `That keeps the platform healthy without stopping the business roadmap.`,
+  },
+  {
+    id: "iam",
+    category: "Technical",
+    topic: "Identity & access management",
+    question: "How would you strengthen identity and access management on a wealth or banking platform?",
+    opening: `Identity is the new security perimeter. I strengthen it in three layers.`,
+    pillars: [
+      {
+        key: "Least Privilege",
+        tag: "RBAC",
+        title: "Least Privilege",
+        text: `First, Least Privilege: Role-based access, with people getting only what their job needs, plus regular access recertification so old access is removed.`,
+        cues: ["least privilege", "role-based", "recertification", "RBAC"],
+      },
+      {
+        key: "Strong Authentication",
+        tag: "MFA + SSO",
+        title: "Strong Authentication",
+        text: `Second, Strong Authentication: Multi-factor authentication and single sign-on for advisors, employees, and clients, with extra controls for privileged and high-value actions.`,
+        cues: ["authentication", "multi-factor", "MFA", "single sign-on"],
+      },
+      {
+        key: "Monitor",
+        tag: "Privileged access",
+        title: "Monitor and Respond",
+        text: `Third, Monitor: Privileged accounts are vaulted, and every sensitive action is logged and monitored, so unusual behaviour is caught and investigated quickly.`,
+        cues: ["monitor", "privileged", "vaulted", "logged"],
+      },
+    ],
+    close: `That protects client assets and keeps us audit-ready for regulators.`,
+  },
+  // ── Business ──
+  {
+    id: "turnaround",
+    category: "Business",
+    topic: "Turning around a troubled program",
+    question: "How do you turn around a program that is late, over budget, or losing stakeholder trust?",
+    opening: `When a program is in trouble, I focus on facts before fixes. I follow three steps.`,
+    pillars: [
+      {
+        key: "Diagnose",
+        tag: "Two weeks",
+        title: "Diagnose Honestly",
+        text: `First, Diagnose: In the first two weeks I talk to the team, the vendors, and the sponsors, and review the plan against real velocity. I find the true critical path and the real blockers.`,
+        cues: ["diagnose", "critical path", "real", "review"],
+      },
+      {
+        key: "Reset",
+        tag: "Scope & plan",
+        title: "Reset the Plan",
+        text: `Second, Reset: I present a realistic re-plan with clear options: reduce scope, add capacity, or move the date. Leadership chooses with full information.`,
+        cues: ["reset", "re-plan", "options", "scope"],
+      },
+      {
+        key: "Rebuild Trust",
+        tag: "Weekly cadence",
+        title: "Rebuild Trust",
+        text: `Third, Rebuild Trust: Short weekly updates, early warnings, and small visible wins. Trust comes back when people see promises kept, week after week.`,
+        cues: ["trust", "weekly", "wins", "promises"],
+      },
+    ],
+    close: `Honest diagnosis, a credible plan, and steady delivery turn a troubled program around.`,
+  },
+  {
+    id: "vendors",
+    category: "Business",
+    topic: "Managing vendors",
+    question: "How do you manage vendors and delivery partners to get the outcomes you need?",
+    opening: `I treat strong vendors as partners, but I manage them on outcomes. I rely on three things.`,
+    pillars: [
+      {
+        key: "Outcomes",
+        tag: "SLAs",
+        title: "Contract for Outcomes",
+        text: `First, Outcomes: Contracts and statements of work are tied to deliverables, quality levels, and service levels, not just hours billed.`,
+        cues: ["outcomes", "contract", "service levels", "SLA", "deliverables"],
+      },
+      {
+        key: "Joint Governance",
+        tag: "One team",
+        title: "Joint Governance",
+        text: `Second, Joint Governance: Vendor leads join our delivery cadence: the same stand-ups, risk reviews, and dashboards. One team, one plan.`,
+        cues: ["governance", "joint", "one team", "cadence"],
+      },
+      {
+        key: "Performance",
+        tag: "Scorecard",
+        title: "Performance and Escalation",
+        text: `Third, Performance: A quarterly scorecard on quality, timeliness, and value, with a clear escalation path. Good partners earn more work; poor performance is addressed early.`,
+        cues: ["performance", "scorecard", "escalation", "quarterly"],
+      },
+    ],
+    close: `That gives us the speed of partners with the accountability of an internal team.`,
+  },
+  {
+    id: "bad-news",
+    category: "Business",
+    topic: "Delivering bad news to executives",
+    question: "How do you tell senior executives that a key initiative is going to be late?",
+    opening: `Bad news does not get better with age. I handle it in three steps.`,
+    pillars: [
+      {
+        key: "Early",
+        tag: "No surprises",
+        title: "Raise It Early",
+        text: `First, Early: As soon as the data shows real risk to the date, I raise it. Executives can handle bad news; what they can't handle is surprises.`,
+        cues: ["early", "surprises", "as soon"],
+      },
+      {
+        key: "Facts & Impact",
+        tag: "Root cause",
+        title: "Facts and Impact",
+        text: `Second, Facts and Impact: I explain what happened, why, and what it means for clients, revenue, or regulatory commitments, without excuses or blame.`,
+        cues: ["facts", "impact", "excuses"],
+      },
+      {
+        key: "Options",
+        tag: "Recommendation",
+        title: "Options and a Recommendation",
+        text: `Third, Options: I bring two or three recovery options with their trade-offs, and my clear recommendation, so the conversation moves straight to a decision.`,
+        cues: ["options", "recommendation", "recovery", "decision"],
+      },
+    ],
+    close: `Executives trust the leader who brings problems early, with a plan.`,
+  },
+  {
+    id: "change-adoption",
+    category: "Leadership",
+    topic: "Leading change",
+    question: "How do you lead a large change, like an agile or digital transformation, so that it actually sticks?",
+    opening: `Most transformations fail on people, not process. I lead change through three levers.`,
+    pillars: [
+      {
+        key: "Why",
+        tag: "Vision",
+        title: "Explain the Why",
+        text: `First, Why: I explain clearly why the change matters for clients and for the team, and what will be different for each person. People support what they understand.`,
+        cues: ["vision", "understand", "matters"],
+      },
+      {
+        key: "Champions",
+        tag: "Pilot teams",
+        title: "Start with Champions",
+        text: `Second, Champions: I start with pilot teams and respected champions, prove it works, and let their success pull others in, instead of forcing a big-bang rollout.`,
+        cues: ["champions", "pilot", "success", "pull"],
+      },
+      {
+        key: "Reinforce",
+        tag: "Measure",
+        title: "Measure and Reinforce",
+        text: `Third, Reinforce: We measure adoption and results, celebrate progress publicly, and remove the old processes, so people can't slip back.`,
+        cues: ["reinforce", "measure", "adoption", "celebrate"],
+      },
+    ],
+    close: `When people understand it, see it work, and feel it rewarded, change sticks.`,
+  },
+  // ── Topics ──
+  {
+    id: "topic-winning-mindset",
+    category: "Topic",
+    topic: "Winning starts in the mind",
+    question: `Share the key ideas of "Winning starts here" in your own words.`,
+    opening: `Winning starts in the mind, long before it shows in our actions. There are three ideas I take from this.`,
+    pillars: [
+      {
+        key: "Mindset",
+        tag: "Thinking guides effort",
+        title: "Mindset Comes First",
+        text: `First, Mindset: When my thinking is clear and strong, my effort becomes powerful; when it's weak, effort feels scattered. Winning thinking is not always positive, it's honest: it sees problems as real, but manageable.`,
+        cues: ["mindset", "thinking", "effort", "honest"],
+      },
+      {
+        key: "Ownership",
+        tag: "Control what you let in",
+        title: "Own Your Inner World",
+        text: `Second, Ownership: I can't control everything outside, but I control what I let inside. I pause and ask: Is this thought helpful? Is it true? Does it move me forward? And I replace "I cannot" with "I don't know yet."`,
+        cues: ["ownership", "control", "helpful", "inside"],
+      },
+      {
+        key: "Habits",
+        tag: "Repetition replaces",
+        title: "Thoughts Are Habits",
+        text: `Third, Habits: Thoughts are habits. Repetition created them, and repetition can replace them. After a mistake I correct instead of criticize, and ask, "What can I do next?" Each small choice is proof, and proof becomes confidence.`,
+        cues: ["habits", "repetition", "correct", "proof", "confidence"],
+      },
+    ],
+    close: `So I start each day deliberately: focus on what I can control, take one step, and let progress build my confidence.`,
+    source: `Winning starts with your mindset. It's not just about what you have or who's on your side, because circumstances can change in an instant. True victory begins quietly within your thoughts. Your mind is the starting point because it guides your efforts. When your thinking is strong and clear, your actions become powerful; if it's weak, your efforts can feel scattered.
+
+It's not about always being positive. It's about being honest and responsible. Winning thinking acknowledges problems but refuses to be defeated by them. You can't control everything outside, but you can control what you let inside. Winning thinking pauses to ask: "Is this thought helpful? Is it true? Does it push me forward?" That pause creates space for better choices.
+
+Thoughts are habits, and habits can be changed. Repetition created them, and repetition can replace them. Pay attention to how you talk to yourself after a mistake. Do you criticize or do you correct? Correction asks, "What can I do next?" Each time you choose a helpful thought, you create proof, and over time those proof points grow into trust in your abilities.
+
+Replace "I cannot" with "I do not know yet." Approach each morning as a fresh start, focusing on what matters and what you can control. The person you are becoming is listening.`,
+  },
 ];
+
+export const DEFAULT_CARDS: AnswerCard[] = [...BASE_CARDS, ...CRAFT_CARDS];
 
 export function cheatCode(card: AnswerCard): string {
   return card.pillars.map((p) => p.key).join(" | ");
@@ -514,7 +901,7 @@ export interface CardProgress {
   takes: number;
 }
 
-export type DailyTask = "flash" | "sprint" | "answer";
+export type DailyTask = "flash" | "facts" | "sprint" | "answer" | "craft";
 
 export interface LeadershipState {
   progress: Record<string, CardProgress>;
@@ -525,6 +912,22 @@ export interface LeadershipState {
   today: { date: string; done: DailyTask[] };
   /** The company you're interviewing with; fills `{company}` in answers. Empty = neutral wording. */
   company: string;
+  /** Your CV, imported in this browser only. */
+  cv: CvDoc | null;
+  /** Facts and numbers from your CV to know instantly. */
+  facts: CvFact[];
+}
+
+export interface CvDoc {
+  fileName: string;
+  importedAt: string;
+  lines: string[];
+}
+
+export interface CvFact {
+  id: string;
+  q: string;
+  a: string;
 }
 
 const KEY = "ceo-voice.leadership";
@@ -540,7 +943,7 @@ export function todayKey(d = new Date()) {
 }
 
 export function emptyState(): LeadershipState {
-  return { progress: {}, custom: [], overrides: {}, days: [], today: { date: todayKey(), done: [] }, company: "" };
+  return { progress: {}, custom: [], overrides: {}, days: [], today: { date: todayKey(), done: [] }, company: "", cv: null, facts: [] };
 }
 
 export function loadState(): LeadershipState {
@@ -548,6 +951,9 @@ export function loadState(): LeadershipState {
     const raw = JSON.parse(localStorage.getItem(KEY) ?? "null") as Partial<LeadershipState> | null;
     const s = { ...emptyState(), ...(raw ?? {}) };
     if (s.today.date !== todayKey()) s.today = { date: todayKey(), done: [] };
+    // Cards saved before categories existed.
+    s.custom = s.custom.map((c) => ({ ...c, category: c.category ?? "Business" }));
+    for (const id of Object.keys(s.overrides)) s.overrides[id] = { ...s.overrides[id], category: s.overrides[id].category ?? DEFAULT_CARDS.find((d) => d.id === id)?.category ?? "Business" };
     return s;
   } catch {
     return emptyState();
@@ -635,8 +1041,17 @@ export function recordRecall(s: LeadershipState, id: string, remembered: boolean
   return { ...s, progress: { ...s.progress, [id]: { ...p, box, due } } };
 }
 
-export function recordFlash(s: LeadershipState, id: string, remembered: boolean): LeadershipState {
-  return markDay(recordRecall(s, id, remembered), "flash");
+export function recordFlash(s: LeadershipState, id: string, remembered: boolean, task: DailyTask = "flash"): LeadershipState {
+  return markDay(recordRecall(s, id, remembered), task);
+}
+
+/** Facts due for recall first, weakest box first. */
+export function factOrder(s: LeadershipState): CvFact[] {
+  return [...s.facts].sort((a, b) => {
+    const pa = progressOf(s, a.id);
+    const pb = progressOf(s, b.id);
+    return (isDue(pa) ? 0 : 1) - (isDue(pb) ? 0 : 1) || pa.box - pb.box;
+  });
 }
 
 export function recordTake(s: LeadershipState, id: string, take: { level: Level; recall: number; score: number; netUsed: boolean }): LeadershipState {
@@ -648,7 +1063,8 @@ export function recordTake(s: LeadershipState, id: string, take: { level: Level;
   };
   // Only unaided takes from memory count as a successful review.
   if (take.level >= 3) out = recordRecall(out, id, take.recall >= 0.8 && !take.netUsed);
-  return markDay(out, "answer");
+  const card = rawCards(s).find((c) => c.id === id);
+  return markDay(out, card && TALK_CATEGORIES.includes(card.category) ? "craft" : "answer");
 }
 
 export function recordSprint(s: LeadershipState): LeadershipState {
@@ -754,6 +1170,73 @@ export function blankCard(): AnswerCard {
     opening: "",
     pillars: [0, 1, 2].map(() => ({ key: "", tag: "", title: "", text: "", cues: [] })),
     close: "",
+    category: "Business",
+    custom: true,
+  };
+}
+
+// ── Your own topics ─────────────────────────────────────────────────────────
+//
+// Paste any article, note or passage. It becomes a practice card: three key
+// ideas you can retell from memory, the same way you answer interview questions.
+
+export interface TopicDraft {
+  opening: string;
+  pillars: { key: string; tag: string; text: string }[];
+  close: string;
+}
+
+const ORDINALS = ["First", "Second", "Third"];
+
+function sentencesOf(text: string): string[] {
+  return (text.replace(/\s+/g, " ").match(/[^.!?]+[.!?]+["')\]”’]*|[^.!?]+$/g) ?? []).map((s) => s.trim()).filter((s) => tokenize(s).length >= 4);
+}
+
+const capital = (w: string) => w.charAt(0).toUpperCase() + w.slice(1);
+
+/** Offline draft: split the text into three parts and keep the most central sentences of each. */
+export function offlineTopicDraft(title: string, text: string): TopicDraft {
+  const sentences = sentencesOf(text);
+  const freq = new Map<string, number>();
+  for (const w of tokenize(text)) if (w.length > 3) freq.set(stem(w), (freq.get(stem(w)) ?? 0) + 1);
+  const score = (s: string) => {
+    const words = tokenize(s).filter((w) => w.length > 3);
+    return words.reduce((n, w) => n + (freq.get(stem(w)) ?? 0), 0) / Math.sqrt(Math.max(1, tokenize(s).length));
+  };
+
+  const per = Math.max(1, Math.ceil(sentences.length / 3));
+  const chunks = [0, 1, 2].map((i) => sentences.slice(i * per, (i + 1) * per)).filter((c) => c.length);
+  const pillars = chunks.map((chunk, i) => {
+    const best = [...chunk].sort((a, b) => score(b) - score(a));
+    const picked: string[] = [];
+    for (const s of best) {
+      if (picked.length && tokenize([...picked, s].join(" ")).length > 45) break;
+      picked.push(s);
+      if (picked.length === 2) break;
+    }
+    const ordered = chunk.filter((s) => picked.includes(s));
+    const anchors = pickAnchors(chunk.join(" "), 3);
+    const key = capital(anchors[0] ?? `Idea ${i + 1}`);
+    return { key, tag: anchors.slice(1).map(capital).join(" · "), text: `${ORDINALS[i]}, ${key}: ${ordered.join(" ")}` };
+  });
+  const top = [...sentences].sort((a, b) => score(b) - score(a))[0] ?? "";
+  return {
+    opening: `The key ideas of "${title}" come down to three points.`,
+    pillars,
+    close: top ? `In short: ${top}` : "",
+  };
+}
+
+export function draftToCard(title: string, source: string, d: TopicDraft): AnswerCard {
+  return {
+    id: newCardId(),
+    category: "Topic",
+    topic: title,
+    question: `Share the key ideas of "${title}" in your own words.`,
+    opening: d.opening,
+    pillars: d.pillars.map((p) => ({ key: p.key, tag: p.tag, title: p.key, text: p.text, cues: [] })),
+    close: d.close,
+    source,
     custom: true,
   };
 }

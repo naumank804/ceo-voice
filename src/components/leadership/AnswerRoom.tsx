@@ -89,6 +89,7 @@ export function AnswerRoom({
   const [result, setResult] = useState<Result | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
+  // Level 1 shows the full answer, so automatic freeze hints are off; the manual hint button still works.
   const take = useLiveTake({ netEnabled: level > 1, camera });
   const pillars = useMemo(() => pillarProgress(card, take.transcript), [card, take.transcript]);
   const nextPillar = pillars.indexOf(false);
@@ -243,7 +244,23 @@ export function AnswerRoom({
           ) : (
             "Signpost as you go: First… Second… Third…"
           )}
+          {nextPillar >= 0 && take.net.level < 2 && (
+            <button
+              type="button"
+              onClick={take.net.open}
+              className="ml-3 rounded-md border border-graphite-700 px-2.5 py-1 text-xs text-graphite-300 transition hover:border-gold-600 hover:text-gold-300"
+            >
+              I&apos;m stuck, give me a hint
+            </button>
+          )}
         </p>
+      )}
+
+      {card.source && phase === "ready" && (
+        <details className="rounded-xl border border-graphite-800 bg-graphite-950/60 p-4">
+          <summary className="cursor-pointer text-sm text-graphite-300">Read the original text first</summary>
+          <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-graphite-200">{card.source}</p>
+        </details>
       )}
 
       {take.error && <p className="rounded-md border border-signal-amber/40 bg-signal-amber/10 px-4 py-3 text-sm text-signal-amber">{take.error}</p>}

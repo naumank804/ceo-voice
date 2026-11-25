@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { primaryButton, SectionLabel } from "@/components/stage/shared";
+import { Chip, primaryButton, SectionLabel } from "@/components/stage/shared";
 import type { Camera } from "@/hooks/useCamera";
-import { type AnswerCard, cheatCode, type LeadershipState, recordTake, reviewOrder } from "@/lib/leadership";
+import { type AnswerCard, type Category, CATEGORY_LABEL, cheatCode, INTERVIEW_CATEGORIES, type LeadershipState, recordTake, reviewOrder } from "@/lib/leadership";
 import { AnswerRoom, type TakeSummary } from "./AnswerRoom";
 
 interface Props {
@@ -21,17 +21,18 @@ export function MockInterview({ state, update, camera, speak, stopSpeaking }: Pr
   const [thinkSec, setThinkSec] = useState(5);
   const [targetSec, setTargetSec] = useState(90);
   const [order, setOrder] = useState<"due" | "random">("due");
+  const [focus, setFocus] = useState<"All" | Category>("All");
   const [queue, setQueue] = useState<AnswerCard[] | null>(null);
   const [index, setIndex] = useState(0);
   const [results, setResults] = useState<{ card: AnswerCard; take: TakeSummary }[]>([]);
   const [done, setDone] = useState(false);
 
   const begin = () => {
-    const pool = reviewOrder(state);
+    const pool = reviewOrder(state).filter((c) => c.category !== "Topic" && (focus === "All" || c.category === focus));
     const picked = order === "due" ? pool : [...pool].sort(() => Math.random() - 0.5);
-    // "Tell me about yourself" opens every real interview; the closing question ends it.
-    const opener = picked.find((c) => c.id === "about-me");
-    const closer = picked.find((c) => c.id === "your-questions");
+    // A full interview opens with "Tell me about yourself" and ends with your questions.
+    const opener = focus === "All" ? picked.find((c) => c.id === "about-me") : undefined;
+    const closer = focus === "All" ? picked.find((c) => c.id === "your-questions") : undefined;
     const middle = picked.filter((c) => c !== opener && c !== closer);
     const n = Math.min(count, picked.length);
     const body = middle.slice(0, Math.max(0, n - (opener ? 1 : 0) - (closer && n > 2 ? 1 : 0)));
@@ -121,6 +122,13 @@ export function MockInterview({ state, update, camera, speak, stopSpeaking }: Pr
           The interviewer reads each question aloud. You get a few seconds to find your three pillar words, then you answer with nothing on screen.
           Freeze for 3 seconds and the next pillar word appears. A light tells you when to land the answer.
         </p>
+        <div className="flex flex-wrap gap-2">
+          {(["All", ...INTERVIEW_CATEGORIES] as const).map((f) => (
+            <Chip key={f} active={focus === f} onClick={() => setFocus(f)}>
+              {f === "All" ? "Full interview" : CATEGORY_LABEL[f]}
+            </Chip>
+          ))}
+        </div>
         <div className="flex flex-wrap gap-4 text-sm text-graphite-300">
           <label className="flex items-center gap-2">
             Questions

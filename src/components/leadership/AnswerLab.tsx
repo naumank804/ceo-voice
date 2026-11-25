@@ -1,12 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { primaryButton, secondaryButton, SectionLabel } from "@/components/stage/shared";
+import { Chip, primaryButton, secondaryButton, SectionLabel } from "@/components/stage/shared";
 import type { Camera } from "@/hooks/useCamera";
 import {
   type AnswerCard,
   allCards,
   blankCard,
+  type Category,
+  draftToCard,
+  offlineTopicDraft,
+  type TopicDraft,
+  CATEGORY_LABEL,
   cheatCode,
   DEFAULT_CARDS,
   dueLabel,
@@ -26,18 +31,43 @@ interface Props {
   stopSpeaking: () => void;
   /** Open straight into this card (from the daily plan). */
   openId?: string | null;
+  /** Which kinds of card this lab shows (interview questions, or leadership talks). */
+  categories: Category[];
+  intro: React.ReactNode;
+  /** Open the editor with this draft (e.g. preparing an answer for a CV line). */
+  initialEdit?: AnswerCard | null;
 }
 
-export function AnswerLab({ state, update, camera, speak, stopSpeaking, openId }: Props) {
+const FILTER_LABEL: Record<string, string> = { All: "All", ...CATEGORY_LABEL };
+
+export function AnswerLab({ state, update, camera, speak, stopSpeaking, openId, categories, intro, initialEdit }: Props) {
+  const FILTERS: ("All" | Category)[] = ["All", ...categories];
+  const talk = categories.includes("Craft");
   const [activeId, setActiveId] = useState<string | null>(openId ?? null);
-  const [editing, setEditing] = useState<AnswerCard | null>(null);
-  const cards = allCards(state);
-  const active = cards.find((c) => c.id === activeId);
+  const [editing, setEditing] = useState<AnswerCard | null>(initialEdit ?? null);
+  const [importing, setImporting] = useState(false);
+  const [filter, setFilter] = useState<(typeof FILTERS)[number]>("All");
+  const all = allCards(state).filter((c) => categories.includes(c.category));
+  const cards = filter === "All" ? all : all.filter((c) => c.category === filter);
+  const active = all.find((c) => c.id === activeId);
+
+  if (importing) {
+    return (
+      <TopicImporter
+        onCancel={() => setImporting(false)}
+        onDraft={(c) => {
+          setImporting(false);
+          setEditing(c);
+        }}
+      />
+    );
+  }
 
   if (editing) {
     return (
       <CardEditor
         card={editing}
+        categories={categories}
         isDefault={DEFAULT_CARDS.some((d) => d.id === editing.id)}
         overridden={!!state.overrides[editing.id]}
         onCancel={() => setEditing(null)}
@@ -85,14 +115,33 @@ export function AnswerLab({ state, update, camera, speak, stopSpeaking, openId }
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <p className="max-w-2xl text-sm leading-relaxed text-graphite-300">
-          Every answer has the same shape: <span className="text-graphite-100">opening → three pillars → landing line</span>. Learn the three-word
-          cheat code and the whole answer unfolds from it. Climb from reading to speaking from memory; cards come back on a spaced schedule so they stay
-          sharp.
-        </p>
-        <button type="button" onClick={() => setEditing(blankCard())} className={secondaryButton}>
-          + Add a question
-        </button>
+        <div className="max-w-2xl text-sm leading-relaxed text-graphite-300">{intro}</div>
+        <div className="flex flex-wrap gap-2">
+          {talk && (
+            <button type="button" onClick={() => setImporting(true)} className={secondaryButton}>
+              + Paste a topic
+            </button>
+          )}
+          {talk && all.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setActiveId(all[Math.floor(Math.random() * all.length)].id)}
+              className={secondaryButton}
+            >
+              🎲 Speak on anything
+            </button>
+          )}
+          <button type="button" onClick={() => setEditing({ ...blankCard(), category: categories[0] })} className={secondaryButton}>
+            {talk ? "+ Add a leadership topic" : "+ Add a question"}
+          </button>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {FILTERS.map((f) => (
+          <Chip key={f} active={filter === f} onClick={() => setFilter(f)}>
+            {FILTER_LABEL[f]} <span className="text-graphite-400">{f === "All" ? all.length : all.filter((c) => c.category === f).length}</span>
+          </Chip>
+        ))}
       </div>
       <ul className="grid gap-3 md:grid-cols-2">
         {cards.map((c) => {
@@ -101,7 +150,10 @@ export function AnswerLab({ state, update, camera, speak, stopSpeaking, openId }
           return (
             <li key={c.id} className="flex flex-col rounded-xl border border-graphite-800 bg-graphite-950/60 p-5">
               <div className="flex items-start justify-between gap-3">
-                <h3 className="font-serif text-2xl text-graphite-100">{c.topic}</h3>
+                <div>
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-graphite-400">{FILTER_LABEL[c.category]}</span>
+                  <h3 className="font-serif text-2xl text-graphite-100">{c.topic}</h3>
+                </div>
                 <span className={`shrink-0 text-[10px] uppercase tracking-widest ${due.due ? "text-gold-500" : "text-graphite-400"}`}>{due.label}</span>
               </div>
               <p className="mt-1 text-sm text-graphite-400">{c.question}</p>
@@ -137,6 +189,7 @@ const input =
 
 function CardEditor({
   card,
+  categories,
   isDefault,
   overridden,
   onSave,
@@ -144,6 +197,7 @@ function CardEditor({
   onDelete,
 }: {
   card: AnswerCard;
+  categories: Category[];
   isDefault: boolean;
   overridden: boolean;
   onSave: (c: AnswerCard) => void;
@@ -178,10 +232,22 @@ function CardEditor({
           settings.
         </p>
       </div>
-      <label className="block space-y-1 text-sm text-graphite-300">
-        Short name
-        <input className={input} value={c.topic} onChange={(e) => setC({ ...c, topic: e.target.value })} placeholder="e.g. Handling conflict" />
-      </label>
+      <div className="grid gap-4 sm:grid-cols-[1fr_200px]">
+        <label className="block space-y-1 text-sm text-graphite-300">
+          Short name
+          <input className={input} value={c.topic} onChange={(e) => setC({ ...c, topic: e.target.value })} placeholder="e.g. Handling conflict" />
+        </label>
+        <label className="block space-y-1 text-sm text-graphite-300">
+          Type
+          <select className={input} value={c.category} onChange={(e) => setC({ ...c, category: e.target.value as Category })}>
+            {categories.map((k) => (
+              <option key={k} value={k}>
+                {FILTER_LABEL[k]}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
       <label className="block space-y-1 text-sm text-graphite-300">
         The question
         <input className={input} value={c.question} onChange={(e) => setC({ ...c, question: e.target.value })} />
@@ -204,6 +270,12 @@ function CardEditor({
         Landing line
         <textarea rows={2} className={input} value={c.close} onChange={(e) => setC({ ...c, close: e.target.value })} />
       </label>
+      {c.category === "Topic" && (
+        <label className="block space-y-1 text-sm text-graphite-300">
+          Original text (to re-read before practising)
+          <textarea rows={6} className={input} value={c.source ?? ""} onChange={(e) => setC({ ...c, source: e.target.value })} />
+        </label>
+      )}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           {(!isDefault || overridden) &&
@@ -232,6 +304,61 @@ function CardEditor({
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function TopicImporter({ onDraft, onCancel }: { onDraft: (c: AnswerCard) => void; onCancel: () => void }) {
+  const [title, setTitle] = useState("");
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+
+  const build = async () => {
+    const name = title.trim() || text.trim().split(/\s+/).slice(0, 5).join(" ");
+    setBusy(true);
+    let draft: TopicDraft;
+    try {
+      const res = await fetch("/api/leadership/topic", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: name, text }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      draft = (await res.json()) as TopicDraft;
+    } catch {
+      draft = offlineTopicDraft(name, text);
+    }
+    setBusy(false);
+    onDraft(draftToCard(name, text.trim(), draft));
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="max-w-2xl space-y-2">
+        <SectionLabel tone="gold">Add a topic to practise</SectionLabel>
+        <p className="text-sm leading-relaxed text-graphite-300">
+          Paste an article, a book passage, meeting notes, or a technical concept you want to explain well. It becomes three key ideas with a
+          cheat code, so you can retell it out loud from memory. You can edit everything before saving.
+        </p>
+      </div>
+      <label className="block space-y-1 text-sm text-graphite-300">
+        Title
+        <input className={input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Winning starts here, Kubernetes basics, Q3 strategy" />
+      </label>
+      <label className="block space-y-1 text-sm text-graphite-300">
+        Text <span className="text-graphite-400">· {words} words</span>
+        <textarea rows={12} className={input} value={text} onChange={(e) => setText(e.target.value)} placeholder="Paste the text here…" />
+      </label>
+      <div className="flex justify-end gap-3">
+        <button type="button" onClick={onCancel} className={secondaryButton}>
+          Cancel
+        </button>
+        <button type="button" disabled={words < 30 || busy} onClick={() => void build()} className={primaryButton}>
+          {busy ? "Finding the three key ideas…" : "Build my cheat code →"}
+        </button>
+      </div>
+      {words > 0 && words < 30 && <p className="text-right text-xs text-graphite-400">Paste at least 30 words.</p>}
     </div>
   );
 }

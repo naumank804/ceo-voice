@@ -13,6 +13,7 @@ import {
   type LeadershipState,
   recordFlash,
   recordSprint,
+  factOrder,
   reviewOrder,
   SIGNPOSTS,
   signpostsUsed,
@@ -21,7 +22,7 @@ import {
 import { computeMetrics } from "@/lib/speech-metrics";
 import type { SpeechMetrics } from "@/lib/types";
 
-export type Drill = "flash" | "sprint" | "bridges";
+export type Drill = "flash" | "facts" | "sprint" | "bridges";
 
 interface Props {
   state: LeadershipState;
@@ -34,6 +35,7 @@ interface Props {
 
 const DRILLS: { id: Drill; name: string; body: string }[] = [
   { id: "flash", name: "Cheat-code recall", body: "See the question, say the three pillars in 10 seconds. Trains instant retrieval." },
+  { id: "facts", name: "CV numbers", body: "Your budgets, percentages and team sizes. Know them without thinking." },
   { id: "sprint", name: "Rule-of-three sprint", body: "A surprise leadership prompt. Three points, 45 seconds, no notes. Trains thinking on your feet." },
   { id: "bridges", name: "Bridge phrases", body: "Lines that fill a pause like a leader, so a blank moment never sounds like one." },
 ];
@@ -42,7 +44,7 @@ export function SharpMind({ state, update, camera, speak, stopSpeaking, initialD
   const [drill, setDrill] = useState<Drill>(initialDrill);
   return (
     <div className="space-y-6">
-      <div className="grid gap-2 sm:grid-cols-3">
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         {DRILLS.map((d) => (
           <button
             key={d.id}
@@ -60,6 +62,7 @@ export function SharpMind({ state, update, camera, speak, stopSpeaking, initialD
         ))}
       </div>
       {drill === "flash" && <FlashRecall state={state} update={update} speak={speak} />}
+      {drill === "facts" && <FactRecall state={state} update={update} />}
       {drill === "sprint" && <Sprint update={update} camera={camera} speak={speak} stopSpeaking={stopSpeaking} />}
       {drill === "bridges" && <Bridges speak={speak} />}
     </div>
@@ -149,6 +152,100 @@ function FlashRecall({ state, update, speak }: Pick<Props, "state" | "update" | 
             </button>
             <button type="button" onClick={() => grade(true)} className={primaryButton}>
               Got all three
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex justify-end">
+          <button type="button" onClick={() => setRevealed(true)} className={secondaryButton}>
+            Reveal
+          </button>
+        </div>
+      )}
+    </section>
+  );
+}
+
+// ── CV numbers ──────────────────────────────────────────────────────────────
+
+const FACT_SEC = 8;
+
+function FactRecall({ state, update }: Pick<Props, "state" | "update">) {
+  const [deck, setDeck] = useState(() => factOrder(state).slice(0, 8));
+  const [i, setI] = useState(0);
+  const [revealed, setRevealed] = useState(false);
+  const [clock, setClock] = useState(FACT_SEC);
+  const [got, setGot] = useState(0);
+  const fact = deck[i];
+
+  useEffect(() => {
+    if (revealed || !fact) return;
+    const id = window.setInterval(() => setClock((c) => c - 1), 1000);
+    return () => window.clearInterval(id);
+  }, [revealed, fact]);
+  useEffect(() => {
+    if (clock <= 0) setRevealed(true);
+  }, [clock]);
+
+  if (!state.facts.length) {
+    return (
+      <p className="rounded-xl border border-graphite-800 bg-graphite-950/60 p-6 text-sm text-graphite-300">
+        Import your CV in <span className="text-graphite-100">My CV</span> and generate your questions. Your numbers and facts will appear here.
+      </p>
+    );
+  }
+
+  const grade = (ok: boolean) => {
+    update((s) => recordFlash(s, fact.id, ok, "facts"));
+    if (ok) setGot((g) => g + 1);
+    setI(i + 1);
+    setRevealed(false);
+    setClock(FACT_SEC);
+  };
+
+  if (!fact) {
+    return (
+      <section className="animate-reveal space-y-4 rounded-xl border border-gold-600/40 bg-navy-900/60 p-6">
+        <SectionLabel tone="gold">Round complete</SectionLabel>
+        <p className="font-serif text-3xl text-graphite-100">
+          {got} of {deck.length} instantly
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            setDeck(factOrder(state).slice(0, 8));
+            setI(0);
+            setGot(0);
+            setRevealed(false);
+            setClock(FACT_SEC);
+          }}
+          className={primaryButton}
+        >
+          Another round
+        </button>
+      </section>
+    );
+  }
+
+  return (
+    <section className="space-y-5 rounded-xl border border-graphite-800 bg-gradient-to-b from-navy-900/70 to-graphite-950 p-6 md:p-8">
+      <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] text-graphite-400">
+        <span>
+          Fact {i + 1} of {deck.length}
+        </span>
+        {!revealed && <span className="font-serif text-3xl normal-case tracking-normal text-gold-400 tabular-nums">{clock}s</span>}
+      </div>
+      <h2 className="font-serif text-2xl leading-snug text-graphite-100 md:text-3xl">{fact.q}</h2>
+      <p className="text-sm text-graphite-400">Say the answer out loud, the way you would in an interview.</p>
+      {revealed ? (
+        <div className="animate-reveal space-y-4">
+          <p className="font-serif text-4xl text-gold-300">{fact.a}</p>
+          <div className="flex flex-wrap justify-end gap-3">
+            <button type="button" onClick={() => grade(false)} className={secondaryButton}>
+              Not instantly
+            </button>
+            <button type="button" onClick={() => grade(true)} className={primaryButton}>
+              Knew it
             </button>
           </div>
         </div>
