@@ -1,4 +1,5 @@
 import { Redis } from "@upstash/redis";
+import { type CareerLevel, type ContentKind, LEVELS, stageById, stageFromSection, trackOf } from "./curriculum";
 
 // Topic Library: topics added on the admin side, stored in Upstash Redis (Vercel Marketplace).
 // Server-only. Every function degrades to "empty" when the database isn't connected,
@@ -12,6 +13,20 @@ export interface LibraryPillar {
 
 export interface LibraryTopic {
   id: string;
+  /** Curriculum placement (see lib/curriculum.ts). */
+  track: string;
+  stage: string;
+  kind: ContentKind;
+  /** For interview questions: the question exactly as an interviewer asks it. */
+  question: string;
+  /** Leadership levels this suits; empty = all levels. */
+  levels: CareerLevel[];
+  difficulty: 1 | 2 | 3;
+  /** Where the content came from, and whether we may use it commercially. */
+  sourceName: string;
+  sourceUrl: string;
+  license: "original" | "licensed" | "public-domain" | "cc" | "unknown";
+  /** Display group: the stage name. Kept for older clients. */
   section: string;
   title: string;
   /** The original passage, shown as "read the original text first". */
@@ -47,11 +62,32 @@ function need(): Redis {
   return r;
 }
 
+/** Topics saved before the curriculum existed get a stage from their old section. */
+function upgrade(t: LibraryTopic): LibraryTopic {
+  if (t.stage && stageById(t.stage)) return t;
+  const stage = stageFromSection(t.section);
+  return {
+    ...t,
+    stage,
+    track: trackOf(stage)?.id ?? "mindset",
+    kind: t.kind ?? "talk",
+    question: t.question ?? "",
+    levels: t.levels ?? [],
+    difficulty: t.difficulty ?? 1,
+    sourceName: t.sourceName ?? "",
+    sourceUrl: t.sourceUrl ?? "",
+    license: t.license ?? "unknown",
+    section: stageById(stage)?.name ?? t.section,
+  };
+}
+
 export async function listTopics(): Promise<LibraryTopic[]> {
   const r = redis();
   if (!r) return [];
   const all = (await r.hgetall<Record<string, LibraryTopic>>(TOPICS)) ?? {};
-  return Object.values(all).sort((a, b) => a.section.localeCompare(b.section) || b.createdAt.localeCompare(a.createdAt));
+  return Object.values(all)
+    .map(upgrade)
+    .sort((a, b) => a.stage.localeCompare(b.stage) || b.createdAt.localeCompare(a.createdAt));
 }
 
 export async function listSections(): Promise<string[]> {
@@ -77,14 +113,29 @@ export function cleanTopic(raw: Partial<LibraryTopic>, existing?: LibraryTopic):
     .filter((p) => p.key && p.text)
     .slice(0, 3);
   const title = str(raw.title, 120);
-  const section = str(raw.section, 60);
-  if (!title) throw new Error("Give the topic a title.");
-  if (!section) throw new Error("Choose a section.");
+  const stage = stageById(str(raw.stage, 40));
+  const track = trackOf(stage?.id);
+  if (!title) throw new Error("Give the item a title.");
+  if (!stage || !track) throw new Error("Choose a track and a stage.");
+  const kind: ContentKind = raw.kind === "question" ? "question" : "talk";
+  const question = str(raw.question, 400);
+  if (kind === "question" && !question) throw new Error("Write the interview question.");
+  const levelIds = LEVELS.map((l) => l.id);
+  const licenses = ["original", "licensed", "public-domain", "cc", "unknown"] as const;
   if (pillars.length !== 3) throw new Error("A topic needs exactly three pillars, each with a key word and text.");
   const now = new Date().toISOString();
   return {
     id: existing?.id ?? `lib-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
-    section,
+    track: track.id,
+    stage: stage.id,
+    kind,
+    question,
+    levels: (Array.isArray(raw.levels) ? raw.levels : []).filter((l): l is CareerLevel => levelIds.includes(l as CareerLevel)),
+    difficulty: raw.difficulty === 2 || raw.difficulty === 3 ? raw.difficulty : 1,
+    sourceName: str(raw.sourceName, 120),
+    sourceUrl: str(raw.sourceUrl, 300),
+    license: licenses.includes(raw.license as (typeof licenses)[number]) ? (raw.license as LibraryTopic["license"]) : "unknown",
+    section: stage.name,
     title,
     text: str(raw.text, 20000),
     opening: str(raw.opening, 400),
@@ -97,7 +148,8 @@ export function cleanTopic(raw: Partial<LibraryTopic>, existing?: LibraryTopic):
 }
 
 export async function getTopic(id: string): Promise<LibraryTopic | null> {
-  return (await need().hget<LibraryTopic>(TOPICS, id)) ?? null;
+  const t = await need().hget<LibraryTopic>(TOPICS, id);
+  return t ? upgrade(t) : null;
 }
 
 export async function saveTopic(t: LibraryTopic): Promise<LibraryTopic> {

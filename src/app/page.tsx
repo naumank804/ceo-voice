@@ -26,10 +26,16 @@ export default function Home() {
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/interview"
+              href="/roadmap"
               className="inline-flex items-center gap-2 rounded-md bg-gold-500 px-5 py-3 text-sm font-semibold text-ink transition hover:bg-gold-400"
             >
-              Begin a mock interview →
+              See your roadmap →
+            </Link>
+            <Link
+              href="/interview"
+              className="inline-flex items-center gap-2 rounded-md border border-graphite-700 px-5 py-3 text-sm font-semibold text-graphite-100 transition hover:border-gold-500"
+            >
+              Begin a mock interview
             </Link>
             <Link
               href="/stage"

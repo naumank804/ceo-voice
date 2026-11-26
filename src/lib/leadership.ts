@@ -50,8 +50,12 @@ export interface AnswerCard {
   close: string;
   /** For topics: the original text you pasted, to re-read before practising. */
   source?: string;
-  /** For Topic Library cards: the admin section, e.g. "Motivation & Mindset". */
+  /** For Topic Library cards: display group (the stage name). */
   section?: string;
+  /** Curriculum stage (lib/curriculum.ts); built-in cards are mapped in curriculum.ts. */
+  stage?: string;
+  /** Library items: an interview question to answer, or a talk to give. */
+  kind?: "question" | "talk";
   /** For CV questions: short phrases from the CV this question probes (used to highlight the CV). */
   cvMatch?: string[];
   custom?: boolean;
@@ -1278,6 +1282,9 @@ export function offlineTopicDraft(title: string, text: string): TopicDraft {
 export function libraryCard(t: {
   id: string;
   section: string;
+  stage?: string;
+  kind?: "question" | "talk";
+  question?: string;
   title: string;
   text: string;
   opening: string;
@@ -1288,8 +1295,10 @@ export function libraryCard(t: {
     id: t.id,
     category: "Library",
     section: t.section,
+    stage: t.stage,
+    kind: t.kind ?? "talk",
     topic: t.title,
-    question: `Speak for a minute on "${t.title}". Make your three points.`,
+    question: t.kind === "question" && t.question ? t.question : `Speak for a minute on "${t.title}". Make your three points.`,
     opening: t.opening,
     pillars: t.pillars.map((p) => ({ key: p.key, tag: p.tag, title: p.key, text: p.text, cues: [p.key, ...p.tag.split(/\s+/)].filter((w) => w.length > 3) })),
     close: t.close,

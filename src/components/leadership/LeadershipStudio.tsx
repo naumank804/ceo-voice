@@ -78,8 +78,12 @@ export function LeadershipStudio() {
         if (d?.topics) update((s) => ({ ...s, library: d.topics!.map(libraryCard) }));
       })
       .catch(() => {});
-    const t = new URLSearchParams(window.location.search).get("tab") as Tab | null;
+    const params = new URLSearchParams(window.location.search);
+    const t = params.get("tab") as Tab | null;
     if (t && TABS.some((x) => x.id === t)) setTab(t);
+    // `?open=<card id>` (from the Roadmap) opens that card straight into practice.
+    const o = params.get("open");
+    if (o) setOpenId(o);
   }, []);
 
   const update = useCallback((fn: (s: LeadershipState) => LeadershipState) => {

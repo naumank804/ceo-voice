@@ -24,8 +24,6 @@ async function upsert(req: Request, isNew: boolean) {
     const existing = isNew ? undefined : body.id ? ((await getTopic(body.id)) ?? undefined) : undefined;
     if (!isNew && !existing) return fail(new Error("That topic no longer exists."), 404);
     const topic = await saveTopic(cleanTopic(body, existing));
-    const sections = await listSections();
-    if (!sections.includes(topic.section)) await saveSections([...sections, topic.section]);
     return Response.json({ topic });
   } catch (e) {
     return fail(e);
