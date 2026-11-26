@@ -47,6 +47,7 @@ export function dailyPlan(now = new Date(), timeZone = "America/Toronto"): Daily
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const neutral = (s: string) => fillCompany(s, "");
+const keys = (c: AnswerCard) => c.pillars.map((p) => p.key).join(" | ");
 
 function pillarsHtml(c: AnswerCard) {
   return c.pillars
@@ -96,11 +97,49 @@ export function renderDailyEmail(plan: DailyPlan, appUrl: string): { subject: st
     `${esc(c.question)}<br><br><table role="presentation" cellpadding="0" cellspacing="0" style="font-size:15px">${pillarsHtml(c)}</table><br>
      Speak for 60 seconds as if you were addressing your team.`,
   )}
-  ${block("4 · Sharp mind", "1 min", "Three points, 45 seconds", `<b>${esc(plan.sprint)}</b><br>No notes. One sentence for your view, then First, Second, Third.`)}
-  ${block("5 · Lock it in", "30 sec", "Recall without looking", `Close this email. Say today's cheat code from memory: <b>${esc(q.pillars.map((p) => p.key).join(" | "))}</b>. If you got all three, you're done for today.`)}
+  ${block(
+    "4 · Sharp mind",
+    "1 min",
+    "Think on your feet",
+    `This trains you to answer a question you did <i>not</i> prepare, the way a surprise interview question or a CEO's hallway question feels.<br><br>
+     Your topic: <b>${esc(plan.sprint)}</b><br><br>
+     <b>How to do it:</b><br>
+     1. Start a 45-second timer on your phone.<br>
+     2. Don't plan. Start speaking immediately using this frame:<br>
+     <div style="margin:8px 0;padding:10px 14px;background:#f6f3ec;border-left:3px solid #b8913a;border-radius:4px;color:#1d2433">
+       “My view is simple: <i>[one sentence]</i>.<br>
+       First, <i>[point]</i>.<br>
+       Second, <i>[point]</i>.<br>
+       Third, <i>[point]</i>.<br>
+       So the bottom line is <i>[repeat your view]</i>.”
+     </div>
+     3. If your mind goes blank, say today's bridge line from step 1 and keep going.<br><br>
+     <b>You win if:</b> you reached “Third” and a closing line before the timer ended, with no long silence. Perfect content doesn't matter. Not freezing does.`,
+  )}
+  ${block(
+    "5 · Lock it in",
+    "30 sec",
+    "Test your memory",
+    `Memory gets stronger when you <i>pull</i> something out of your head, not when you read it again. So this is a quick test.<br><br>
+     <b>Don't scroll up.</b> Say these out loud from memory:<br>
+     1. The three pillar words for today's interview question (step 2)<br>
+     2. The three pillar words for today's leadership topic (step 3)<br>
+     3. Today's bridge line (step 1)<br><br>
+     Now check your answers at the very bottom of this email.<br>
+     <b>All correct:</b> you're done for today.<br>
+     <b>Missed one:</b> say the full answer once more out loud, then you're done. It will stick by tomorrow.`,
+  )}
   <tr><td style="padding:20px 24px 26px;border-top:1px solid #ece6d8" align="center">
     <a href="${link("today")}" style="display:inline-block;background:#b8913a;color:#1d2433;text-decoration:none;font-weight:600;padding:12px 22px;border-radius:8px">Open today's full workout →</a>
     <div style="font-size:12px;color:#888;margin-top:12px">Want more? <a href="${link("mock")}" style="color:#9a7b2f">Mock interview</a> · <a href="${link("cv")}" style="color:#9a7b2f">CV numbers</a> · <a href="${link("craft")}" style="color:#9a7b2f">Leadership craft</a></div>
+  </td></tr>
+  <tr><td style="padding:60px 24px 22px;border-top:1px dashed #ece6d8">
+    <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9a7b2f">Answers for step 5</div>
+    <div style="font-size:14px;line-height:1.6;color:#555;margin-top:6px">
+      1. Interview: <b>${esc(keys(q))}</b><br>
+      2. Leadership: <b>${esc(keys(c))}</b><br>
+      3. Bridge line: <b>“${esc(plan.bridge.phrase)}”</b>
+    </div>
   </td></tr>
 </table></td></tr></table></body></html>`;
 
@@ -117,11 +156,24 @@ export function renderDailyEmail(plan: DailyPlan, appUrl: string): { subject: st
     `3. LEADERSHIP (1 min): ${c.question}`,
     `   Cheat code: ${c.pillars.map((p) => `${p.key} (${p.tag})`).join(" | ")}`,
     "",
-    `4. SHARP MIND (1 min): ${plan.sprint} Three points, 45 seconds.`,
+    `4. SHARP MIND (1 min): think on your feet. Topic: ${plan.sprint}`,
+    "   Start a 45-second timer and speak at once, no planning:",
+    '   "My view is simple: ... First, ... Second, ... Third, ... So the bottom line is ..."',
+    "   If you blank, use today's bridge line. You win if you reach Third without freezing.",
     "",
-    `5. LOCK IT IN: say today's cheat code from memory: ${q.pillars.map((p) => p.key).join(" | ")}`,
+    "5. LOCK IT IN (30 sec): without scrolling up, say out loud:",
+    "   - the three pillar words for today's interview question",
+    "   - the three pillar words for today's leadership topic",
+    "   - today's bridge line",
+    "   Then check the answers at the bottom. Missed one? Say the full answer once more.",
     "",
     `Full workout: ${link("today")}`,
+    "",
+    "",
+    "ANSWERS FOR STEP 5",
+    `Interview: ${keys(q)}`,
+    `Leadership: ${keys(c)}`,
+    `Bridge line: "${plan.bridge.phrase}"`,
   ].join("\n");
 
   return { subject, html, text };
