@@ -15,7 +15,7 @@ import {
   type Level,
   levelInfo,
   LEVELS,
-  lettersOf,
+  clozeOf,
   pillarProgress,
   recommendLevel,
   SIGNPOSTS,
@@ -346,9 +346,10 @@ function PillarRail({ card, level, progress, next, netLevel }: { card: AnswerCar
 }
 
 function Support({ card, level }: { card: AnswerCard; level: Level }) {
-  const show = (t: string) => (level === 1 ? t : lettersOf(t));
+  const show = (t: string) => (level === 1 ? t : <Cloze text={t} />);
   return (
-    <section className={`space-y-3 rounded-xl border border-graphite-800 bg-graphite-950/60 p-5 leading-relaxed ${level === 2 ? "font-mono text-sm tracking-wide" : ""}`}>
+    <section className={`space-y-3 rounded-xl border border-graphite-800 bg-graphite-950/60 p-5 ${level === 2 ? "text-lg leading-loose" : "leading-relaxed"}`}>
+      {level === 2 && <p className="text-xs text-graphite-400">Say each sentence aloud and fill in the missing words from memory. Hover a word to peek.</p>}
       <p className="text-graphite-300">{show(card.opening)}</p>
       {card.pillars.map((p, i) => (
         <p key={i} className="text-graphite-100">
@@ -357,6 +358,24 @@ function Support({ card, level }: { card: AnswerCard; level: Level }) {
       ))}
       {card.close && <p className="text-graphite-300">{show(card.close)}</p>}
     </section>
+  );
+}
+
+/** Fill-in-the-blanks text: hidden letters keep their width but are invisible until hovered. */
+function Cloze({ text }: { text: string }) {
+  return (
+    <>
+      {clozeOf(text).map((t, i) =>
+        t.hidden ? (
+          <span key={i} title={t.shown.replace(/^\W+/, "") + t.hidden}>
+            {t.shown}
+            <span className="border-b-2 border-dotted border-graphite-600 text-transparent transition-colors select-none hover:text-graphite-400">{t.hidden}</span>
+          </span>
+        ) : (
+          <span key={i}>{t.shown}</span>
+        ),
+      )}
+    </>
   );
 }
 

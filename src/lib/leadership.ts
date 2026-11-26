@@ -823,7 +823,7 @@ export type Level = 1 | 2 | 3 | 4;
 
 export const LEVELS: { level: Level; name: string; shows: string; hint: string }[] = [
   { level: 1, name: "Read", shows: "Full answer", hint: "Read it aloud twice. Feel the rhythm: opening, three pillars, landing line." },
-  { level: 2, name: "First letters", shows: "Cheat code + first letters", hint: "Your memory fills each word. This is where the answer starts to stick." },
+  { level: 2, name: "Fill the gaps", shows: "Key words + first letters", hint: "Key words stay, the rest shows its first letter. Your memory fills each gap: this is where the answer starts to stick." },
   { level: 3, name: "Cheat code", shows: "Three pillar words only", hint: "Say it in your own words. Each pillar word unlocks a whole paragraph." },
   { level: 4, name: "Interview", shows: "The question only", hint: "Answer like it's the real thing. A hint appears only if you freeze." },
 ];
@@ -834,6 +834,44 @@ export function levelInfo(l: Level) {
 
 export function lettersOf(text: string) {
   return firstLetters(text);
+}
+
+/** One piece of a fill-in-the-blanks answer: `shown` is visible, `hidden` is the rest of the word to recall. */
+export interface ClozeToken {
+  shown: string;
+  hidden: string;
+}
+
+const GLUE = new Set(["a", "an", "the", "i", "we", "my", "our", "to", "of", "in", "on", "at", "by", "for", "and", "or", "but", "so", "is", "it", "as", "be", "was", "are", "with", "that", "this"]);
+
+/**
+ * Level 2 "First letters": a readable cloze, not letter soup. Short glue words, numbers,
+ * names/acronyms and the "First, Key:" signpost stay whole; other words show their first
+ * letter and a gap the length of the rest, so memory fills in each word.
+ */
+export function clozeOf(text: string): ClozeToken[] {
+  const signpost = text.match(/^((?:First|Second|Third|Fourth|Fifth),\s*[^:]{1,40}:\s*)/);
+  const head = signpost ? signpost[1] : "";
+  const tokens: ClozeToken[] = head ? [{ shown: head, hidden: "" }] : [];
+  const parts = text.slice(head.length).split(/(\s+)/);
+  parts.forEach((part, i) => {
+    const m = part.match(/^([^A-Za-z0-9$]*)([A-Za-z0-9$][\w$%.,'’&/+-]*?)([^A-Za-z0-9%]*)$/);
+    if (!m || /^\s+$/.test(part)) {
+      tokens.push({ shown: part, hidden: "" });
+      return;
+    }
+    const [, pre, word, post] = m;
+    const prev = parts.slice(0, i).join("").trim();
+    const sentenceStart = !prev || /[.!?:]$/.test(prev);
+    const keep =
+      word.length <= 2 ||
+      GLUE.has(word.toLowerCase()) ||
+      /\d|\$|%/.test(word) ||
+      /^[A-Z0-9&/+-]{2,}$/.test(word) || // acronyms: IAM, CTO, AWS
+      (!sentenceStart && /^[A-Z]/.test(word)); // names: Guidewire, Okta
+    tokens.push(keep ? { shown: part, hidden: "" } : { shown: pre + word[0], hidden: word.slice(1) }, ...(keep || !post ? [] : [{ shown: post, hidden: "" }]));
+  });
+  return tokens;
 }
 
 // ── Live tracking ───────────────────────────────────────────────────────────
