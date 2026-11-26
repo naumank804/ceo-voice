@@ -28,7 +28,7 @@ export function MockInterview({ state, update, camera, speak, stopSpeaking }: Pr
   const [done, setDone] = useState(false);
 
   const begin = () => {
-    const pool = reviewOrder(state).filter((c) => c.category !== "Topic" && (focus === "All" || c.category === focus));
+    const pool = reviewOrder(state).filter((c) => INTERVIEW_CATEGORIES.includes(c.category) && (focus === "All" || c.category === focus));
     const picked = order === "due" ? pool : [...pool].sort(() => Math.random() - 0.5);
     // A full interview opens with "Tell me about yourself" and ends with your questions.
     const opener = focus === "All" ? picked.find((c) => c.id === "about-me") : undefined;

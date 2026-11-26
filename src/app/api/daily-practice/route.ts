@@ -1,4 +1,6 @@
+import { listTopics } from "@/lib/content-store";
 import { dailyPlan, renderDailyEmail } from "@/lib/daily-email";
+import { libraryCard } from "@/lib/leadership";
 
 // Called once a day by Vercel Schedules (see vercel.json). The route is public, so
 // every request must carry the CRON_SECRET that Vercel sends as a bearer token.
@@ -13,7 +15,11 @@ export async function GET(request: Request) {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const plan = dailyPlan();
+  // Published Topic Library topics join the rotation; the email still sends if the database is down.
+  const library = await listTopics()
+    .then((ts) => ts.filter((t) => t.published).map(libraryCard))
+    .catch(() => []);
+  const plan = dailyPlan(new Date(), "America/Toronto", library);
   const email = renderDailyEmail(plan, APP_URL);
   if (new URL(request.url).searchParams.get("preview")) {
     return new Response(email.html, { headers: { "Content-Type": "text/html; charset=utf-8" } });

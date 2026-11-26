@@ -20,11 +20,15 @@ export interface Pillar {
   cues: string[];
 }
 
-export type Category = "Business" | "Technical" | "Leadership" | "CV" | "Craft" | "Topic";
+export type Category = "Business" | "Technical" | "Leadership" | "CV" | "Craft" | "Topic" | "Library";
 /** Questions an interviewer asks. */
 export const INTERVIEW_CATEGORIES: Category[] = ["Business", "Technical", "Leadership", "CV"];
 /** Things a leader talks about: leadership craft and your own topics. */
 export const TALK_CATEGORIES: Category[] = ["Craft", "Topic"];
+/** Topics published from the admin Topic Library (motivation, mindset…), grouped by `section`. */
+export const LIBRARY_CATEGORIES: Category[] = ["Library"];
+/** Spoken talks rather than interview answers. */
+export const isTalk = (c: Category) => TALK_CATEGORIES.includes(c) || LIBRARY_CATEGORIES.includes(c);
 export const CATEGORY_LABEL: Record<Category, string> = {
   Business: "Business",
   Technical: "Technical",
@@ -32,6 +36,7 @@ export const CATEGORY_LABEL: Record<Category, string> = {
   CV: "My CV",
   Craft: "Leadership craft",
   Topic: "My topics",
+  Library: "Topic library",
 };
 
 export interface AnswerCard {
@@ -45,6 +50,8 @@ export interface AnswerCard {
   close: string;
   /** For topics: the original text you pasted, to re-read before practising. */
   source?: string;
+  /** For Topic Library cards: the admin section, e.g. "Motivation & Mindset". */
+  section?: string;
   /** For CV questions: short phrases from the CV this question probes (used to highlight the CV). */
   cvMatch?: string[];
   custom?: boolean;
@@ -954,6 +961,8 @@ export interface LeadershipState {
   cv: CvDoc | null;
   /** Facts and numbers from your CV to know instantly. */
   facts: CvFact[];
+  /** Published Topic Library cards from the admin side (cached so practice works offline). */
+  library: AnswerCard[];
 }
 
 export interface CvDoc {
@@ -981,7 +990,7 @@ export function todayKey(d = new Date()) {
 }
 
 export function emptyState(): LeadershipState {
-  return { progress: {}, custom: [], overrides: {}, days: [], today: { date: todayKey(), done: [] }, company: "", cv: null, facts: [] };
+  return { progress: {}, custom: [], overrides: {}, days: [], today: { date: todayKey(), done: [] }, company: "", cv: null, facts: [], library: [] };
 }
 
 export function loadState(): LeadershipState {
@@ -1008,7 +1017,7 @@ export function saveState(s: LeadershipState) {
 
 /** Raw cards, with `{company}` placeholders intact (for editing). */
 export function rawCards(s: LeadershipState): AnswerCard[] {
-  return [...DEFAULT_CARDS.map((c) => s.overrides[c.id] ?? c), ...s.custom];
+  return [...DEFAULT_CARDS.map((c) => s.overrides[c.id] ?? c), ...s.custom, ...(s.library ?? [])];
 }
 
 /** Fills `{company}` / `{Company}` with the target company, or a neutral phrase when none is set. */
@@ -1102,7 +1111,7 @@ export function recordTake(s: LeadershipState, id: string, take: { level: Level;
   // Only unaided takes from memory count as a successful review.
   if (take.level >= 3) out = recordRecall(out, id, take.recall >= 0.8 && !take.netUsed);
   const card = rawCards(s).find((c) => c.id === id);
-  return markDay(out, card && TALK_CATEGORIES.includes(card.category) ? "craft" : "answer");
+  return markDay(out, card && isTalk(card.category) ? "craft" : "answer");
 }
 
 export function recordSprint(s: LeadershipState): LeadershipState {
@@ -1262,6 +1271,29 @@ export function offlineTopicDraft(title: string, text: string): TopicDraft {
     opening: `The key ideas of "${title}" come down to three points.`,
     pillars,
     close: top ? `In short: ${top}` : "",
+  };
+}
+
+/** A published Topic Library topic (from /api/content) as a practice card. */
+export function libraryCard(t: {
+  id: string;
+  section: string;
+  title: string;
+  text: string;
+  opening: string;
+  pillars: { key: string; tag: string; text: string }[];
+  close: string;
+}): AnswerCard {
+  return {
+    id: t.id,
+    category: "Library",
+    section: t.section,
+    topic: t.title,
+    question: `Speak for a minute on "${t.title}". Make your three points.`,
+    opening: t.opening,
+    pillars: t.pillars.map((p) => ({ key: p.key, tag: p.tag, title: p.key, text: p.text, cues: [p.key, ...p.tag.split(/\s+/)].filter((w) => w.length > 3) })),
+    close: t.close,
+    source: t.text || undefined,
   };
 }
 

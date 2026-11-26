@@ -42,14 +42,17 @@ interface Props {
 const FILTER_LABEL: Record<string, string> = { All: "All", ...CATEGORY_LABEL };
 
 export function AnswerLab({ state, update, camera, speak, stopSpeaking, openId, categories, intro, initialEdit }: Props) {
-  const FILTERS: ("All" | Category)[] = ["All", ...categories];
   const talk = categories.includes("Craft");
+  /** Topic Library: admin-managed cards, filtered by section instead of category. */
+  const library = categories.includes("Library");
   const [activeId, setActiveId] = useState<string | null>(openId ?? null);
   const [editing, setEditing] = useState<AnswerCard | null>(initialEdit ?? null);
   const [importing, setImporting] = useState(false);
-  const [filter, setFilter] = useState<(typeof FILTERS)[number]>("All");
+  const [filter, setFilter] = useState<string>("All");
   const all = allCards(state).filter((c) => categories.includes(c.category));
-  const cards = filter === "All" ? all : all.filter((c) => c.category === filter);
+  const groupOf = (c: AnswerCard) => (library ? (c.section ?? "Other") : c.category);
+  const FILTERS: string[] = ["All", ...(library ? [...new Set(all.map(groupOf))] : categories)];
+  const cards = filter === "All" ? all : all.filter((c) => groupOf(c) === filter);
   const active = all.find((c) => c.id === activeId);
 
   if (importing) {
@@ -123,7 +126,7 @@ export function AnswerLab({ state, update, camera, speak, stopSpeaking, openId, 
               + Paste a topic
             </button>
           )}
-          {talk && all.length > 0 && (
+          {(talk || library) && all.length > 0 && (
             <button
               type="button"
               onClick={() => setActiveId(all[Math.floor(Math.random() * all.length)].id)}
@@ -132,18 +135,25 @@ export function AnswerLab({ state, update, camera, speak, stopSpeaking, openId, 
               🎲 Speak on anything
             </button>
           )}
-          <button type="button" onClick={() => setEditing({ ...blankCard(), category: categories[0] })} className={secondaryButton}>
-            {talk ? "+ Add a leadership topic" : "+ Add a question"}
-          </button>
+          {!library && (
+            <button type="button" onClick={() => setEditing({ ...blankCard(), category: categories[0] })} className={secondaryButton}>
+              {talk ? "+ Add a leadership topic" : "+ Add a question"}
+            </button>
+          )}
         </div>
       </div>
       <div className="flex flex-wrap gap-2">
         {FILTERS.map((f) => (
           <Chip key={f} active={filter === f} onClick={() => setFilter(f)}>
-            {FILTER_LABEL[f]} <span className="text-graphite-400">{f === "All" ? all.length : all.filter((c) => c.category === f).length}</span>
+            {FILTER_LABEL[f] ?? f} <span className="text-graphite-400">{f === "All" ? all.length : all.filter((c) => groupOf(c) === f).length}</span>
           </Chip>
         ))}
       </div>
+      {library && all.length === 0 && (
+        <p className="rounded-xl border border-dashed border-graphite-700 p-8 text-center text-sm text-graphite-400">
+          No topics published yet. Add them on the admin side at <span className="text-graphite-200">/admin</span>; they appear here on every device.
+        </p>
+      )}
       <ul className="grid gap-3 md:grid-cols-2">
         {cards.map((c) => {
           const p = progressOf(state, c.id);
@@ -152,7 +162,7 @@ export function AnswerLab({ state, update, camera, speak, stopSpeaking, openId, 
             <li key={c.id} className="flex flex-col rounded-xl border border-graphite-800 bg-graphite-950/60 p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <span className="text-[10px] uppercase tracking-[0.2em] text-graphite-400">{FILTER_LABEL[c.category]}</span>
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-graphite-400">{library ? c.section : FILTER_LABEL[c.category]}</span>
                   <h3 className="font-serif text-2xl text-graphite-100">{c.topic}</h3>
                 </div>
                 <span className={`shrink-0 text-[10px] uppercase tracking-widest ${due.due ? "text-gold-500" : "text-graphite-400"}`}>{due.label}</span>
@@ -165,13 +175,15 @@ export function AnswerLab({ state, update, camera, speak, stopSpeaking, openId, 
                   {p.best > 0 && ` · best ${p.best}`}
                 </span>
                 <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setEditing(rawCards(state).find((x) => x.id === c.id) ?? c)}
-                    className="rounded-md border border-graphite-700 px-3 py-1.5 text-xs text-graphite-300 transition hover:border-graphite-500"
-                  >
-                    Edit
-                  </button>
+                  {!library && (
+                    <button
+                      type="button"
+                      onClick={() => setEditing(rawCards(state).find((x) => x.id === c.id) ?? c)}
+                      className="rounded-md border border-graphite-700 px-3 py-1.5 text-xs text-graphite-300 transition hover:border-graphite-500"
+                    >
+                      Edit
+                    </button>
+                  )}
                   <button type="button" onClick={() => setActiveId(c.id)} className="rounded-md bg-gold-500 px-4 py-1.5 text-xs font-semibold text-ink transition hover:bg-gold-400">
                     Practise
                   </button>

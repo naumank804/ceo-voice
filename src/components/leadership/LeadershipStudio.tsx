@@ -14,6 +14,8 @@ import {
   emptyState,
   INTERVIEW_CATEGORIES,
   isDue,
+  libraryCard,
+  LIBRARY_CATEGORIES,
   type LeadershipState,
   loadState,
   progressOf,
@@ -30,7 +32,7 @@ import { MyCv } from "./MyCv";
 import { type Drill, SharpMind } from "./SharpMind";
 import { Toolkit } from "./Toolkit";
 
-type Tab = "today" | "cv" | "toolkit" | "lab" | "craft" | "mock" | "mind";
+type Tab = "today" | "cv" | "toolkit" | "lab" | "craft" | "library" | "mock" | "mind";
 
 const TABS: { id: Tab; name: string; body: string }[] = [
   { id: "today", name: "Today", body: "Your daily leader workout." },
@@ -38,6 +40,7 @@ const TABS: { id: Tab; name: string; body: string }[] = [
   { id: "toolkit", name: "Toolkit", body: "Everything to have ready." },
   { id: "lab", name: "Answer Lab", body: "Interview answers, until automatic." },
   { id: "craft", name: "Leadership Craft", body: "Speak on any leadership topic." },
+  { id: "library", name: "Topic Library", body: "Motivation, mindset and more." },
   { id: "mock", name: "Mock Interview", body: "Real conditions, from memory." },
   { id: "mind", name: "Sharp Mind", body: "Recall, numbers, thinking in threes." },
 ];
@@ -68,6 +71,13 @@ export function LeadershipStudio() {
   useEffect(() => {
     setState(loadState());
     setLoaded(true);
+    // Published Topic Library content from the admin side; the cached copy keeps working offline.
+    fetch("/api/content")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { topics?: Parameters<typeof libraryCard>[0][] } | null) => {
+        if (d?.topics) update((s) => ({ ...s, library: d.topics!.map(libraryCard) }));
+      })
+      .catch(() => {});
     const t = new URLSearchParams(window.location.search).get("tab") as Tab | null;
     if (t && TABS.some((x) => x.id === t)) setTab(t);
   }, []);
@@ -94,7 +104,7 @@ export function LeadershipStudio() {
   /** Open a card in whichever lab holds it. */
   const openCard = (id: string) => {
     const card = reviewOrder(state).find((c) => c.id === id);
-    go(card && TALK_CATEGORIES.includes(card.category) ? "craft" : "lab", { openId: id });
+    go(card?.category === "Library" ? "library" : card && TALK_CATEGORIES.includes(card.category) ? "craft" : "lab", { openId: id });
   };
 
   const ordered = reviewOrder(state);
@@ -271,6 +281,20 @@ export function LeadershipStudio() {
               The subjects a senior leader is expected to speak on with ease: in a town hall, a 1-on-1, a panel or an interview. Each has a
               three-word cheat code. Add your own leadership topics, paste anything you read, or let the dice pick one so you learn to{" "}
               <span className="text-graphite-100">speak on anything</span>.
+            </>
+          }
+        />
+      )}
+      {tab === "library" && (
+        <AnswerLab
+          key={nonce}
+          {...shared}
+          openId={openId}
+          categories={LIBRARY_CATEGORIES}
+          intro={
+            <>
+              Passages chosen for you on the admin side: motivation, mindset and more. Read the original text, learn its three-word cheat code, then
+              speak on it in your own words. <span className="text-graphite-100">Speaking well on any subject is a leadership skill.</span>
             </>
           }
         />

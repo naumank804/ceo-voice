@@ -27,11 +27,12 @@ function pick<T>(list: T[], day: number, salt: number): T {
   return list[(day * 7 + salt) % list.length];
 }
 
-export function dailyPlan(now = new Date(), timeZone = "America/Toronto"): DailyPlan {
+/** `library` = published Topic Library cards; they rotate into step 3 alongside leadership craft. */
+export function dailyPlan(now = new Date(), timeZone = "America/Toronto", library: AnswerCard[] = []): DailyPlan {
   const date = new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
   const day = Math.floor(Date.parse(`${date}T00:00:00Z`) / 86_400_000);
   const interview = DEFAULT_CARDS.filter((c) => INTERVIEW_CATEGORIES.includes(c.category));
-  const craft = DEFAULT_CARDS.filter((c) => c.category === "Craft");
+  const craft = [...DEFAULT_CARDS.filter((c) => c.category === "Craft"), ...library];
   const bridges = BRIDGE_PHRASES.flatMap((g) => g.phrases.map((phrase) => ({ group: g.group, phrase })));
   return {
     date,
@@ -91,11 +92,11 @@ export function renderDailyEmail(plan: DailyPlan, appUrl: string): { subject: st
      <span style="color:#666">Opening: “${esc(neutral(q.opening))}”</span>`,
   )}
   ${block(
-    "3 · Leadership",
+    `3 · ${esc(c.section ?? "Leadership")}`,
     "1 min",
     esc(c.topic),
     `${esc(c.question)}<br><br><table role="presentation" cellpadding="0" cellspacing="0" style="font-size:15px">${pillarsHtml(c)}</table><br>
-     Speak for 60 seconds as if you were addressing your team.`,
+     ${c.category === "Library" ? "Speak for 60 seconds on it, in your own words." : "Speak for 60 seconds as if you were addressing your team."}`,
   )}
   ${block(
     "4 · Sharp mind",
@@ -153,7 +154,7 @@ export function renderDailyEmail(plan: DailyPlan, appUrl: string): { subject: st
     `   Cheat code: ${q.pillars.map((p) => `${p.key} (${p.tag})`).join(" | ")}`,
     "   Answer out loud in 90 seconds.",
     "",
-    `3. LEADERSHIP (1 min): ${c.question}`,
+    `3. ${(c.section ?? "Leadership").toUpperCase()} (1 min): ${c.question}`,
     `   Cheat code: ${c.pillars.map((p) => `${p.key} (${p.tag})`).join(" | ")}`,
     "",
     `4. SHARP MIND (1 min): think on your feet. Topic: ${plan.sprint}`,
