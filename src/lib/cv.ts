@@ -121,9 +121,17 @@ export interface CvPack {
 
 export function packToCards(pack: CvPack): { cards: AnswerCard[]; facts: CvFact[] } {
   const stamp = Date.now().toString(36);
+  // Stable ids from the topic, so re-importing an updated pack keeps your practice progress.
+  const seen = new Set<string>();
+  const idFor = (topic: string, i: number) => {
+    const base = `cv-${topic.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || i}`;
+    const id = seen.has(base) ? `${base}-${i}` : base;
+    seen.add(id);
+    return id;
+  };
   const cards = pack.questions.map(
     (q, i): AnswerCard => ({
-      id: `cv-${stamp}-${i}`,
+      id: idFor(q.topic, i),
       category: "CV",
       topic: q.topic,
       question: q.question,
@@ -163,7 +171,7 @@ export function cleanPack(raw: unknown): CvPack | null {
       close: str(q?.close),
     }))
     .filter((q) => q.question && q.pillars.length === 3)
-    .slice(0, 25);
+    .slice(0, 40);
   const facts = raw.facts.map((f) => ({ q: str(f?.q), a: str(f?.a) })).filter((f) => f.q && f.a).slice(0, 40);
   return questions.length || facts.length ? { questions, facts } : null;
 }

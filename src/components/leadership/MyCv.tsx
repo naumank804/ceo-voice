@@ -39,12 +39,21 @@ export function MyCv({ state, update, onPractise, onPrepare }: Props) {
 
   const applyPack = (pack: CvPack) => {
     const { cards, facts } = packToCards(pack);
-    update((s) => ({
-      ...s,
-      // A fresh pack replaces the previous CV questions and facts; your other cards are untouched.
-      custom: [...s.custom.filter((c) => c.category !== "CV"), ...cards],
-      facts,
-    }));
+    update((s) => {
+      // Carry practice progress over to the same question in the new pack (matched by topic).
+      const progress = { ...s.progress };
+      for (const old of s.custom.filter((c) => c.category === "CV")) {
+        const match = cards.find((c) => c.topic === old.topic);
+        if (match && s.progress[old.id] && !progress[match.id]) progress[match.id] = s.progress[old.id];
+      }
+      return {
+        ...s,
+        progress,
+        // A fresh pack replaces the previous CV questions and facts; your other cards are untouched.
+        custom: [...s.custom.filter((c) => c.category !== "CV"), ...cards],
+        facts,
+      };
+    });
   };
 
   const importFile = async (file: File) => {
