@@ -3,6 +3,7 @@
 export interface ProfileInput {
   name?: unknown;
   role?: unknown;
+  targetRole?: unknown;
   industry?: unknown;
   metrics?: unknown;
 }
@@ -13,12 +14,14 @@ const clip = (v: unknown, n: number) => (typeof v === "string" ? v.replace(/\s+/
 export function profileBlock(raw: ProfileInput | undefined | null): string {
   if (!raw || typeof raw !== "object") return "";
   const role = clip(raw.role, 120);
+  const target = clip(raw.targetRole, 120);
   const industry = clip(raw.industry, 120);
   const metrics = clip(raw.metrics, 1500);
-  if (!role && !industry && !metrics) return "";
+  if (!role && !target && !industry && !metrics) return "";
   return [
     "Candidate profile (use it to tailor wording and examples; never invent facts beyond it):",
-    role && `- Current / target role: ${role}`,
+    role && `- Current job title: ${role}`,
+    target && `- Target role: ${target}`,
     industry && `- Industry: ${industry}`,
     metrics && `- Key career metrics and projects: ${metrics}`,
   ]

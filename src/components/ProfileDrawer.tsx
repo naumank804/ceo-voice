@@ -96,8 +96,11 @@ export function ProfileDrawer() {
               <Field label="Name">
                 <input value={p.name} onChange={(e) => set("name", e.target.value)} placeholder="How the coach greets you" className={input} />
               </Field>
-              <Field label="Current / target role">
-                <input value={p.role} onChange={(e) => set("role", e.target.value)} placeholder="e.g. AVP Digital Delivery" className={input} />
+              <Field label="Current job title">
+                <input value={p.role} onChange={(e) => set("role", e.target.value)} placeholder="e.g. Senior Auditor" className={input} />
+              </Field>
+              <Field label="Target role">
+                <input value={p.targetRole} onChange={(e) => set("targetRole", e.target.value)} placeholder="e.g. Audit Manager" className={input} />
               </Field>
               <Field label="Industry domain">
                 <input value={p.industry} onChange={(e) => set("industry", e.target.value)} placeholder="e.g. Financial Services / Wealth" className={input} />

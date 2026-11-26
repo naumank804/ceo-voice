@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { SectionLabel } from "@/components/stage/shared";
 import { type CareerLevel, LEVELS, levelFromRole, MASTERY, type Stage, stageOfCard, type Track, type TrackId, TRACKS } from "@/lib/curriculum";
 import { type AnswerCard, allCards, cheatCode, emptyState, type LeadershipState, libraryCard, loadState, progressOf, saveState } from "@/lib/leadership";
+import { loadOnboarding, type Onboarding } from "@/lib/onboarding";
 import { useProfile } from "@/lib/profile";
 
 /** Practice tools that serve a stage even before authored content exists. */
@@ -52,12 +53,21 @@ export function Roadmap() {
   const [loaded, setLoaded] = useState(false);
   const [track, setTrack] = useState<TrackId>("interview");
   const [open, setOpen] = useState<string | null>(null);
+  const [onboarding, setOnboarding] = useState<Onboarding | null>(null);
   const profile = useProfile();
-  const level = levelFromRole(profile.role);
+  const level = onboarding?.plan.targetLevel ?? levelFromRole(profile.targetRole || profile.role);
+  // The learner's plan orders the tracks; without onboarding, the default order.
+  const tracks = useMemo(() => {
+    const order = onboarding?.plan.trackOrder;
+    return order ? [...TRACKS].sort((x, y) => order.indexOf(x.id) - order.indexOf(y.id)) : TRACKS;
+  }, [onboarding]);
 
   useEffect(() => {
     const s = loadState();
     setState(s);
+    const o = loadOnboarding();
+    setOnboarding(o);
+    if (o) setTrack(o.plan.trackOrder[0]);
     setLoaded(true);
     const t = new URLSearchParams(window.location.search).get("track") as TrackId | null;
     if (t && TRACKS.some((x) => x.id === t)) setTrack(t);
@@ -77,7 +87,7 @@ export function Roadmap() {
   const cards = useMemo(() => allCards(state), [state]);
   const views = useMemo(() => Object.fromEntries(TRACKS.map((t) => [t.id, buildTrack(t, cards, state, level)])) as Record<TrackId, StageView[]>, [cards, state, level]);
   const t = TRACKS.find((x) => x.id === track)!;
-  const nextSteps = TRACKS.map((tr) => ({ track: tr, view: views[tr.id].find((v) => v.status === "next") })).filter((x) => x.view);
+  const nextSteps = tracks.map((tr) => ({ track: tr, view: views[tr.id].find((v) => v.status === "next") })).filter((x) => x.view);
 
   return (
     <div className="space-y-10">
@@ -97,6 +107,22 @@ export function Roadmap() {
           )}
         </p>
       </div>
+
+      {loaded && !onboarding && (
+        <Link href="/start" className="block rounded-xl border border-gold-500 bg-gold-500/10 p-5 transition hover:bg-gold-500/15">
+          <span className="block font-serif text-2xl text-graphite-100">Personalise this roadmap in 2 minutes →</span>
+          <span className="block text-sm text-graphite-300">Tell us your profession, job title and target role. The coach writes interview questions for your field and orders your tracks.</span>
+        </Link>
+      )}
+      {loaded && onboarding && (
+        <p className="text-sm text-graphite-400">
+          Personalised for <span className="text-graphite-200">{onboarding.answers.jobTitle}</span>
+          {onboarding.answers.targetRole && <> → <span className="text-gold-300">{onboarding.answers.targetRole}</span></>}.{" "}
+          <Link href="/start" className="underline-offset-4 hover:underline">
+            Update my answers
+          </Link>
+        </p>
+      )}
 
       {loaded && nextSteps.length > 0 && (
         <section className="space-y-3">
@@ -129,7 +155,7 @@ export function Roadmap() {
       )}
 
       <div role="tablist" className="flex gap-2 overflow-x-auto pb-1">
-        {TRACKS.map((x) => {
+        {tracks.map((x) => {
           const v = views[x.id];
           const done = v.filter((s) => s.status === "mastered").length;
           return (

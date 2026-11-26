@@ -1,5 +1,5 @@
 import { Redis } from "@upstash/redis";
-import { type CareerLevel, type ContentKind, LEVELS, stageById, stageFromSection, trackOf } from "./curriculum";
+import { type CareerLevel, type ContentKind, LEVELS, PROFESSIONS, stageById, stageFromSection, trackOf } from "./curriculum";
 
 // Topic Library: topics added on the admin side, stored in Upstash Redis (Vercel Marketplace).
 // Server-only. Every function degrades to "empty" when the database isn't connected,
@@ -21,6 +21,8 @@ export interface LibraryTopic {
   question: string;
   /** Leadership levels this suits; empty = all levels. */
   levels: CareerLevel[];
+  /** Professions this suits; empty = every profession. */
+  professions: string[];
   difficulty: 1 | 2 | 3;
   /** Where the content came from, and whether we may use it commercially. */
   sourceName: string;
@@ -64,7 +66,7 @@ function need(): Redis {
 
 /** Topics saved before the curriculum existed get a stage from their old section. */
 function upgrade(t: LibraryTopic): LibraryTopic {
-  if (t.stage && stageById(t.stage)) return t;
+  if (t.stage && stageById(t.stage)) return { ...t, professions: t.professions ?? [] };
   const stage = stageFromSection(t.section);
   return {
     ...t,
@@ -73,6 +75,7 @@ function upgrade(t: LibraryTopic): LibraryTopic {
     kind: t.kind ?? "talk",
     question: t.question ?? "",
     levels: t.levels ?? [],
+    professions: t.professions ?? [],
     difficulty: t.difficulty ?? 1,
     sourceName: t.sourceName ?? "",
     sourceUrl: t.sourceUrl ?? "",
@@ -131,6 +134,7 @@ export function cleanTopic(raw: Partial<LibraryTopic>, existing?: LibraryTopic):
     kind,
     question,
     levels: (Array.isArray(raw.levels) ? raw.levels : []).filter((l): l is CareerLevel => levelIds.includes(l as CareerLevel)),
+    professions: (Array.isArray(raw.professions) ? raw.professions : []).filter((p) => PROFESSIONS.some((x) => x.id === p)),
     difficulty: raw.difficulty === 2 || raw.difficulty === 3 ? raw.difficulty : 1,
     sourceName: str(raw.sourceName, 120),
     sourceUrl: str(raw.sourceUrl, 300),

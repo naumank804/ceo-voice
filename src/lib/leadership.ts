@@ -20,9 +20,9 @@ export interface Pillar {
   cues: string[];
 }
 
-export type Category = "Business" | "Technical" | "Leadership" | "CV" | "Craft" | "Topic" | "Library";
+export type Category = "Business" | "Technical" | "Leadership" | "CV" | "Role" | "Craft" | "Topic" | "Library";
 /** Questions an interviewer asks. */
-export const INTERVIEW_CATEGORIES: Category[] = ["Business", "Technical", "Leadership", "CV"];
+export const INTERVIEW_CATEGORIES: Category[] = ["Role", "Business", "Technical", "Leadership", "CV"];
 /** Things a leader talks about: leadership craft and your own topics. */
 export const TALK_CATEGORIES: Category[] = ["Craft", "Topic"];
 /** Topics published from the admin Topic Library (motivation, mindset…), grouped by `section`. */
@@ -34,6 +34,7 @@ export const CATEGORY_LABEL: Record<Category, string> = {
   Technical: "Technical",
   Leadership: "Leadership",
   CV: "My CV",
+  Role: "My role",
   Craft: "Leadership craft",
   Topic: "My topics",
   Library: "Topic library",
@@ -56,6 +57,8 @@ export interface AnswerCard {
   stage?: string;
   /** Library items: an interview question to answer, or a talk to give. */
   kind?: "question" | "talk";
+  /** Library items: professions this suits (empty = all). */
+  professions?: string[];
   /** For CV questions: short phrases from the CV this question probes (used to highlight the CV). */
   cvMatch?: string[];
   custom?: boolean;
@@ -967,6 +970,10 @@ export interface LeadershipState {
   facts: CvFact[];
   /** Published Topic Library cards from the admin side (cached so practice works offline). */
   library: AnswerCard[];
+  /** From onboarding: the learner's profession, used to filter library content. */
+  profession?: string;
+  /** Show the built-in example interview answers (written for a technology delivery leader). */
+  showExamples?: boolean;
 }
 
 export interface CvDoc {
@@ -1021,7 +1028,11 @@ export function saveState(s: LeadershipState) {
 
 /** Raw cards, with `{company}` placeholders intact (for editing). */
 export function rawCards(s: LeadershipState): AnswerCard[] {
-  return [...DEFAULT_CARDS.map((c) => s.overrides[c.id] ?? c), ...s.custom, ...(s.library ?? [])];
+  // Built-in interview answers are examples for a technology leader; other professions get their own generated set.
+  const showExamples = s.showExamples ?? (!s.profession || s.profession === "technology");
+  const defaults = DEFAULT_CARDS.filter((c) => showExamples || !INTERVIEW_CATEGORIES.includes(c.category)).map((c) => s.overrides[c.id] ?? c);
+  const library = (s.library ?? []).filter((c) => !s.profession || !c.professions?.length || c.professions.includes(s.profession));
+  return [...defaults, ...s.custom, ...library];
 }
 
 /** Fills `{company}` / `{Company}` with the target company, or a neutral phrase when none is set. */
@@ -1282,6 +1293,7 @@ export function offlineTopicDraft(title: string, text: string): TopicDraft {
 export function libraryCard(t: {
   id: string;
   section: string;
+  professions?: string[];
   stage?: string;
   kind?: "question" | "talk";
   question?: string;
@@ -1297,6 +1309,7 @@ export function libraryCard(t: {
     section: t.section,
     stage: t.stage,
     kind: t.kind ?? "talk",
+    professions: t.professions ?? [],
     topic: t.title,
     question: t.kind === "question" && t.question ? t.question : `Speak for a minute on "${t.title}". Make your three points.`,
     opening: t.opening,
@@ -1304,6 +1317,27 @@ export function libraryCard(t: {
     close: t.close,
     source: t.text || undefined,
   };
+}
+
+/** Onboarding starter questions → this learner's own "My role" cards. */
+export function starterCards(items: { stage: string; topic: string; question: string; opening: string; pillars: { key: string; tag: string; text: string }[]; close: string }[]): AnswerCard[] {
+  const seen = new Set<string>();
+  return items.map((q, i) => {
+    let id = `role-${q.topic.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || i}`;
+    if (seen.has(id)) id = `${id}-${i}`;
+    seen.add(id);
+    return {
+      id,
+      category: "Role",
+      stage: q.stage,
+      topic: q.topic,
+      question: q.question,
+      opening: q.opening,
+      pillars: q.pillars.map((p) => ({ key: p.key, tag: p.tag, title: p.key, text: p.text, cues: [p.key, ...p.tag.split(/\s+/)].filter((w) => w.length > 3) })),
+      close: q.close,
+      custom: true,
+    };
+  });
 }
 
 export function draftToCard(title: string, source: string, d: TopicDraft): AnswerCard {

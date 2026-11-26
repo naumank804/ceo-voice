@@ -15,6 +15,21 @@ export const LEVELS: { id: CareerLevel; name: string; short: string }[] = [
   { id: "csuite", name: "C-suite (leads the enterprise)", short: "C-suite" },
 ];
 
+/** Professions the app serves; content can be tagged to one or more (none = every profession). */
+export const PROFESSIONS = [
+  { id: "technology", name: "Technology & IT", examples: "engineering, delivery, architecture, security, data" },
+  { id: "finance", name: "Finance & Accounting", examples: "FP&A, controllership, treasury, investment" },
+  { id: "audit", name: "Audit, Risk & Compliance", examples: "internal/external audit, risk, compliance, regulatory" },
+  { id: "product", name: "Product & Project", examples: "product owner, product manager, project/program manager, scrum" },
+  { id: "operations", name: "Operations & Supply chain", examples: "operations, logistics, procurement, process improvement" },
+  { id: "sales", name: "Sales, Marketing & Customer", examples: "sales, account management, marketing, customer success" },
+  { id: "people", name: "HR & People", examples: "HR business partner, talent, L&D, recruiting" },
+  { id: "healthcare", name: "Healthcare", examples: "clinical, nursing, healthcare administration" },
+  { id: "other", name: "Other", examples: "anything else" },
+] as const;
+
+export type ProfessionId = (typeof PROFESSIONS)[number]["id"];
+
 /** What a content item asks the learner to do. */
 export type ContentKind = "question" | "talk";
 
@@ -70,9 +85,15 @@ export const TRACKS: Track[] = [
       },
       {
         id: "int-technical",
-        name: "4 · Technical depth",
-        goal: "Explain technical decisions clearly to both engineers and executives.",
-        covers: ["Architecture and trade-offs", "Cloud and migration", "Security and risk", "Delivery and DevOps", "Data and AI", "Incidents"],
+        name: "4 · Role expertise",
+        goal: "Prove deep expertise in your own field, explained clearly to experts and executives alike.",
+        covers: [
+          "Technology: architecture, cloud, security, delivery",
+          "Finance: forecasting, variance, controls",
+          "Audit & risk: standards, findings, risk ratings",
+          "Product: prioritisation, roadmaps, discovery",
+          "…tagged by profession, plus questions generated for each learner",
+        ],
         kind: "question",
       },
       {

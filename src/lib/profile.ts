@@ -7,7 +7,10 @@ import { useEffect, useState } from "react";
 
 export interface ExecutiveProfile {
   name: string;
+  /** Current job title. */
   role: string;
+  /** The role they're working towards, e.g. "Audit Manager". */
+  targetRole: string;
   industry: string;
   metrics: string;
 }
@@ -16,7 +19,7 @@ export const PROFILE_KEY = "ceo-voice.profile";
 const EVENT = "ceo-voice:profile";
 const PREFIX = "ceo-voice.";
 
-export const EMPTY_PROFILE: ExecutiveProfile = { name: "", role: "", industry: "", metrics: "" };
+export const EMPTY_PROFILE: ExecutiveProfile = { name: "", role: "", targetRole: "", industry: "", metrics: "" };
 
 export function loadProfile(): ExecutiveProfile {
   try {
@@ -37,7 +40,7 @@ export function saveProfile(p: ExecutiveProfile) {
 }
 
 export function hasProfile(p: ExecutiveProfile) {
-  return Boolean(p.role.trim() || p.industry.trim() || p.metrics.trim());
+  return Boolean(p.role.trim() || p.targetRole.trim() || p.industry.trim() || p.metrics.trim());
 }
 
 /** The profile as sent to the AI routes. Undefined when empty, so requests stay unchanged. */

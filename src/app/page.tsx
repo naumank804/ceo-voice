@@ -26,10 +26,10 @@ export default function Home() {
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/roadmap"
+              href="/start"
               className="inline-flex items-center gap-2 rounded-md bg-gold-500 px-5 py-3 text-sm font-semibold text-ink transition hover:bg-gold-400"
             >
-              See your roadmap →
+              Get started: build your plan →
             </Link>
             <Link
               href="/interview"

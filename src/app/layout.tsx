@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Inter } from "next/font/google";
 import Link from "next/link";
+import { AccountMenu } from "@/components/AccountMenu";
 import { ProfileDrawer } from "@/components/ProfileDrawer";
 import { THEME_BOOT_SCRIPT, ThemePicker } from "@/components/ThemePicker";
 import "./globals.css";
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </Link>
               <ProfileDrawer />
               <ThemePicker />
+              <AccountMenu />
             </nav>
           </div>
         </header>

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Chip, primaryButton, secondaryButton, SectionLabel } from "@/components/stage/shared";
 import type { LibraryTopic } from "@/lib/content-store";
-import { type CareerLevel, LEVELS, stageById, type TrackId, TRACKS } from "@/lib/curriculum";
+import { type CareerLevel, LEVELS, PROFESSIONS, stageById, type TrackId, TRACKS } from "@/lib/curriculum";
 
 const input =
   "w-full rounded-md border border-graphite-700 bg-graphite-950 px-3 py-2 text-sm text-graphite-100 placeholder:text-graphite-600 focus:border-gold-600 focus:outline-none";
@@ -26,6 +26,7 @@ function emptyDraft(stageId: string): Draft {
     kind: stage.kind,
     question: "",
     levels: stage.level ? [stage.level] : [],
+    professions: [],
     difficulty: 1,
     sourceName: "",
     sourceUrl: "",
@@ -318,7 +319,8 @@ function ItemRow({ item: t, onEdit, onToggle, onDelete }: { item: LibraryTopic; 
         <span className="block text-xs text-graphite-400">
           {stageById(t.stage)?.name} · {"●".repeat(t.difficulty)}
           {"○".repeat(3 - t.difficulty)}
-          {t.levels.length > 0 && ` · ${t.levels.map((l) => LEVELS.find((x) => x.id === l)?.short).join(", ")}`} ·{" "}
+          {t.levels.length > 0 && ` · ${t.levels.map((l) => LEVELS.find((x) => x.id === l)?.short).join(", ")}`}
+          {t.professions.length > 0 && ` · ${t.professions.map((p) => PROFESSIONS.find((x) => x.id === p)?.name).join(", ")}`} ·{" "}
           <span className="text-gold-400">{t.pillars.map((p) => p.key).join(" | ")}</span>
         </span>
       </button>
@@ -468,6 +470,20 @@ function ItemEditor({ draft, onCancel, onSaved }: { draft: Draft; onCancel: () =
             {LEVELS.map((l) => (
               <Chip key={l.id} active={d.levels.includes(l.id)} onClick={() => toggleLevel(l.id)}>
                 {l.short}
+              </Chip>
+            ))}
+          </div>
+        </div>
+        <div className="space-y-1 text-sm text-graphite-300 md:col-span-4">
+          Suits professions <span className="text-xs text-graphite-400">(none selected = every profession)</span>
+          <div className="flex flex-wrap gap-2">
+            {PROFESSIONS.filter((p) => p.id !== "other").map((p) => (
+              <Chip
+                key={p.id}
+                active={d.professions.includes(p.id)}
+                onClick={() => set("professions", d.professions.includes(p.id) ? d.professions.filter((x) => x !== p.id) : [...d.professions, p.id])}
+              >
+                {p.name}
               </Chip>
             ))}
           </div>
