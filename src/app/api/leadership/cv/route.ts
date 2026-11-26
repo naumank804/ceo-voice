@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cleanPack, offlineCvPack } from "@/lib/cv";
 import { completeJSON } from "@/lib/openai";
+import { type ProfileInput, profileBlock } from "@/lib/profile-server";
 
 // The CV text is used only to generate questions for this request; it is not stored or logged.
 
@@ -33,13 +34,13 @@ Rules for facts (aim for 20): one precise question each, addressed to the candid
 Never include phone numbers, emails or addresses.`;
 
 export async function POST(req: Request) {
-  const body = (await req.json()) as { lines?: string[] };
+  const body = (await req.json()) as { lines?: string[]; profile?: ProfileInput };
   const lines = (Array.isArray(body.lines) ? body.lines : []).map(String).slice(0, 600);
   const text = lines.join("\n").slice(0, 40_000);
   if (!text.trim()) return NextResponse.json({ error: "Empty CV" }, { status: 400 });
 
   try {
-    const pack = cleanPack(await completeJSON(system, `CV:\n"""\n${text}\n"""`));
+    const pack = cleanPack(await completeJSON(system, `${profileBlock(body.profile)}\n\nCV:\n"""\n${text}\n"""`));
     if (pack && pack.questions.length >= 5) return NextResponse.json({ ...pack, source: "ai" });
   } catch (err) {
     console.warn("[cv] falling back to offline pack:", (err as Error).message);

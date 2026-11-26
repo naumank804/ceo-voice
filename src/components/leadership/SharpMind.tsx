@@ -21,6 +21,7 @@ import {
 } from "@/lib/leadership";
 import { computeMetrics } from "@/lib/speech-metrics";
 import type { SpeechMetrics } from "@/lib/types";
+import { logTake } from "@/lib/progress";
 
 export type Drill = "flash" | "facts" | "sprint" | "bridges";
 
@@ -306,8 +307,12 @@ function Sprint({ update, camera, speak, stopSpeaking }: Pick<Props, "update" | 
     busyRef.current = true;
     try {
       const t = await take.finish();
-      setResult({ take: t, metrics: computeMetrics(t.transcript, t.durationSec), signs: signpostsUsed(t.transcript) });
-      if (t.transcript) update(recordSprint);
+      const metrics = computeMetrics(t.transcript, t.durationSec);
+      setResult({ take: t, metrics, signs: signpostsUsed(t.transcript) });
+      if (t.transcript) {
+        update(recordSprint);
+        logTake("sprint", metrics);
+      }
       setPhase("report");
     } finally {
       busyRef.current = false;
@@ -436,6 +441,7 @@ function Sprint({ update, camera, speak, stopSpeaking }: Pick<Props, "update" | 
           <div className={camera.on ? "grid gap-5 lg:grid-cols-[1fr_380px]" : ""}>
             <LiveAnswer
               armed
+              timeZone={[SPEAK_SEC - 15, SPEAK_SEC]}
               finishLabel="Finish"
               finalText={take.finalText}
               interimText={take.interimText}

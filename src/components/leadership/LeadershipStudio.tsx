@@ -22,7 +22,9 @@ import {
   streak,
   TALK_CATEGORIES,
 } from "@/lib/leadership";
+import { useProfile } from "@/lib/profile";
 import { AnswerLab } from "./AnswerLab";
+import { MasteryDashboard } from "./MasteryDashboard";
 import { MockInterview } from "./MockInterview";
 import { MyCv } from "./MyCv";
 import { type Drill, SharpMind } from "./SharpMind";
@@ -59,6 +61,8 @@ export function LeadershipStudio() {
   const [nonce, setNonce] = useState(0);
   const camera = useCamera();
   const tts = useSpeechSynthesis();
+  const profile = useProfile();
+  const firstName = profile.name.trim().split(/\s+/)[0];
 
   // Load after mount so server and client render the same HTML. `?tab=` lets the daily email deep-link.
   useEffect(() => {
@@ -111,8 +115,10 @@ export function LeadershipStudio() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div className="max-w-2xl space-y-3">
-          <p className="text-xs font-medium uppercase tracking-[0.25em] text-gold-500">Leadership Practice</p>
-          <h1 className="font-serif text-5xl leading-tight">Speak like the leader you are</h1>
+          <p className="text-xs font-medium uppercase tracking-[0.25em] text-gold-500">
+            Leadership Practice{profile.role.trim() && ` · ${profile.role.trim()}`}
+          </p>
+          <h1 className="font-serif text-5xl leading-tight">{firstName ? `${firstName}, speak like the leader you are` : "Speak like the leader you are"}</h1>
           <p className="leading-relaxed text-graphite-300">
             A sharp mind under pressure is trained, not born. Short daily practice of recall, structure and speaking out loud makes your words come
             naturally, keeps you interview-ready, and builds the voice of a leader who can talk to anyone about anything.
@@ -120,6 +126,8 @@ export function LeadershipStudio() {
         </div>
         <CameraToggle camera={camera} />
       </div>
+
+      {loaded && <MasteryDashboard state={state} refresh={`${tab}-${nonce}`} />}
 
       <div role="tablist" className="flex gap-2 overflow-x-auto pb-1">
         {TABS.map((t) => (

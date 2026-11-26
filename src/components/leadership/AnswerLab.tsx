@@ -22,6 +22,7 @@ import {
   recordTake,
 } from "@/lib/leadership";
 import { AnswerRoom } from "./AnswerRoom";
+import { profilePayload } from "@/lib/profile";
 
 interface Props {
   state: LeadershipState;
@@ -322,7 +323,7 @@ function TopicImporter({ onDraft, onCancel }: { onDraft: (c: AnswerCard) => void
       const res = await fetch("/api/leadership/topic", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: name, text }),
+        body: JSON.stringify({ title: name, text, profile: profilePayload() }),
       });
       if (!res.ok) throw new Error(String(res.status));
       draft = (await res.json()) as TopicDraft;

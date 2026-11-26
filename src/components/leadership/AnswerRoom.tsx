@@ -25,6 +25,10 @@ import { offlineAnalysis } from "@/lib/offline-coach";
 import { computeMetrics } from "@/lib/speech-metrics";
 import { scoreTake, type StageScore } from "@/lib/stage";
 import type { AnswerAnalysis, SpeechMetrics } from "@/lib/types";
+import { profilePayload } from "@/lib/profile";
+import { logTake } from "@/lib/progress";
+import { buildScorecard } from "@/lib/scorecard";
+import { ExecutiveScorecard } from "@/components/ExecutiveScorecard";
 
 type Phase = "ready" | "asking" | "think" | "live" | "analyzing" | "report";
 
@@ -149,6 +153,7 @@ export function AnswerRoom({
     const base: Result = { take: t, metrics, pillars: got, signposts: signpostsUsed(t.transcript), recall, score, analysis: null };
     setResult(base);
     onRecorded({ level, recall, score: score.total, netUsed: !!t.netUsage, pillars: got });
+    logTake(mode === "mock" ? "mock" : "leadership", metrics, score.total);
 
     if (mode === "mock") {
       setResult({ ...base, analysis: offlineAnalysis(t.transcript) });
@@ -161,7 +166,7 @@ export function AnswerRoom({
       const res = await fetch("/api/interview/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode: "interview", question: card.question, transcript: t.transcript, keywords: card.pillars.map((p) => p.key) }),
+        body: JSON.stringify({ mode: "interview", question: card.question, transcript: t.transcript, keywords: card.pillars.map((p) => p.key), profile: profilePayload() }),
       });
       if (!res.ok) throw new Error(String(res.status));
       analysis = (await res.json()) as AnswerAnalysis;
@@ -270,6 +275,7 @@ export function AnswerRoom({
         {phase === "live" ? (
           <LiveAnswer
             armed
+            timeZone={mode === "mock" ? [Math.round(targetSec / 2), Math.round(targetSec * 0.83)] : undefined}
             finishLabel="I've finished"
             finalText={take.finalText}
             interimText={take.interimText}
@@ -439,6 +445,15 @@ function Report({
           />
         </section>
       </div>
+
+      <ExecutiveScorecard
+        sc={buildScorecard(r.take.transcript, r.metrics, card.pillars.map((p, i) => ({ key: p.key, hit: r.pillars[i] })))}
+        transcript={r.take.transcript}
+        keys={card.pillars.map((p) => p.key)}
+        analysis={r.analysis}
+        analyzing={analyzing}
+        onHear={onHear}
+      />
 
       <section className="rounded-xl border border-graphite-800 bg-graphite-950/60 p-6">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">

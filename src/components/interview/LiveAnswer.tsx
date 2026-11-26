@@ -1,5 +1,8 @@
 "use client";
 
+import { TelemetryBar, TIME_ZONE } from "@/components/TelemetryBar";
+import { useDeliveryTelemetry } from "@/hooks/useDeliveryTelemetry";
+
 interface Props {
   armed: boolean;
   finalText: string;
@@ -13,6 +16,10 @@ interface Props {
   title?: string;
   finishLabel?: string;
   idleText?: string;
+  /** Live delivery telemetry (time, pace, fillers, power pauses). On by default. */
+  telemetry?: boolean;
+  /** Target answer length in seconds; null hides the zone (e.g. long speeches). */
+  timeZone?: [number, number] | null;
 }
 
 export function LiveAnswer({
@@ -27,7 +34,11 @@ export function LiveAnswer({
   title = "Your answer",
   finishLabel = "I've finished my answer",
   idleText = "The mic opens after the question.",
+  telemetry = true,
+  timeZone = TIME_ZONE,
 }: Props) {
+  const text = typedMode ? typed : `${finalText} ${interimText}`;
+  const t = useDeliveryTelemetry(text, armed && telemetry, !typedMode);
   const hasContent = typedMode ? typed.trim().length > 0 : (finalText + interimText).trim().length > 0;
 
   return (
@@ -53,6 +64,8 @@ export function LiveAnswer({
           {!hasContent && <span className="text-graphite-600">{armed ? "Listening…" : idleText}</span>}
         </p>
       )}
+
+      {telemetry && armed && <TelemetryBar t={t} zone={timeZone} spoken={!typedMode} />}
 
       <div className="mt-4 flex justify-end">
         <button

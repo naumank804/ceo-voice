@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { completeJSON } from "@/lib/openai";
+import { type ProfileInput, profileBlock } from "@/lib/profile-server";
 import { offlineQuestions } from "@/lib/question-bank";
 import type { Industry, InterviewQuestion, StruggleLevel } from "@/lib/types";
 
@@ -8,6 +9,7 @@ interface Body {
   level: StruggleLevel;
   jobDescription?: string;
   count?: number;
+  profile?: ProfileInput;
 }
 
 const SYSTEM = `You are a senior hiring manager and an interview coach for non-native English speakers.
@@ -21,7 +23,9 @@ The Safety Net is what the candidate sees if they freeze for 3 seconds. It must:
   Starters must begin with "I" or "In my", never with "Um", "So", or "I think".
 
 Respond with JSON: {"questions":[{"text":string,"intent":string,"keywords":[string,string,string],"starter":string}]}
-"intent" is one short sentence describing what the interviewer is really testing.`;
+"intent" is one short sentence describing what the interviewer is really testing.
+If a candidate profile is given, ask about their actual role, domain and projects (e.g. probe a named program or metric),
+and make keywords and starter fit their background without inventing facts.`;
 
 function sanitize(raw: unknown): InterviewQuestion[] {
   const list = (raw as { questions?: unknown[] })?.questions;
@@ -55,6 +59,7 @@ export async function POST(req: Request) {
         `Industry: ${industry}`,
         `Candidate English level: ${body.level ?? "Intermediate"}${body.level === "Beginner" ? " — keep questions short and plainly worded" : ""}`,
         `Number of questions: ${count}. Start with a "tell me about yourself"-style opener, then mix behavioural and role-specific questions.`,
+        profileBlock(body.profile),
         jd ? `Job description:\n"""\n${jd}\n"""` : "No job description provided — use common questions for this industry.",
       ].join("\n"),
     );

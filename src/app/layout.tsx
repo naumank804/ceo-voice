@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Inter } from "next/font/google";
 import Link from "next/link";
+import { ProfileDrawer } from "@/components/ProfileDrawer";
 import { THEME_BOOT_SCRIPT, ThemePicker } from "@/components/ThemePicker";
 import "./globals.css";
 
@@ -21,7 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-dvh font-sans">
         <header className="border-b border-graphite-800/80">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-4">
             <Link href="/" className="font-serif text-xl tracking-wide text-graphite-100">
               The CEO <span className="text-gold-500">Voice</span>
             </Link>
@@ -35,6 +36,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/stage" className="transition hover:text-gold-400">
                 Speaking Stage
               </Link>
+              <Link href="/vocabulary" className="transition hover:text-gold-400">
+                Vocabulary
+              </Link>
+              <ProfileDrawer />
               <ThemePicker />
             </nav>
           </div>

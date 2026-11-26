@@ -1,7 +1,7 @@
 import type { PresenceBreakdown, SafetyNetUsage, SpeechMetrics } from "./types";
 
-/** Ideal interview pace. Below = hesitation, above = panic. */
-export const PACE = { min: 110, max: 165 } as const;
+/** Ideal executive pace. Below = hesitation, above = panic. */
+export const PACE = { min: 120, max: 145 } as const;
 
 export const FILLER_PATTERNS: Record<string, RegExp> = {
   um: /\b(um+|umm+|erm)\b/gi,

@@ -35,6 +35,10 @@ export interface AnswerAnalysis {
   executiveRewrite: string;
   /** One sentence of direct coaching, e.g. "You sounded unsure when discussing Python..." */
   coachingNote: string;
+  /** Three-word cheat code for the polished answer (Rule of 3). */
+  cheatCode?: string[];
+  /** The polished answer in exactly four sentences: headline, then one per pillar. */
+  fourSentence?: string[];
   source: "ai" | "offline";
 }
 

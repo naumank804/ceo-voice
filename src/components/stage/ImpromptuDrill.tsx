@@ -11,6 +11,8 @@ import { computeMetrics } from "@/lib/speech-metrics";
 import { type Framework, FRAMEWORKS, frameworkProgress, scoreTake, type StageScore, type TopicCategory, TOPICS } from "@/lib/stage";
 import type { AnswerAnalysis, SpeechMetrics } from "@/lib/types";
 import { Chip, primaryButton, ScoreCard, secondaryButton, SectionLabel, TakeStats } from "./shared";
+import { profilePayload } from "@/lib/profile";
+import { logTake } from "@/lib/progress";
 
 type Phase = "pick" | "prep" | "live" | "analyzing" | "report";
 const CATEGORIES: ("All" | TopicCategory)[] = ["All", "Work", "Leadership", "Opinion", "Personal"];
@@ -128,6 +130,7 @@ export function ImpromptuDrill({ incoming, camera, speak, stopSpeaking }: Props)
     const done = frameworkProgress(t.transcript, fw);
     const score = scoreTake(metrics, done.filter(Boolean).length / done.length, t.netUsage);
     const base: Result = { take: t, metrics, steps: done, score, analysis: null };
+    logTake("impromptu", metrics, score.total);
     setResult(base);
     setPhase("analyzing");
 
@@ -136,7 +139,7 @@ export function ImpromptuDrill({ incoming, camera, speak, stopSpeaking }: Props)
       const res = await fetch("/api/interview/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode: "impromptu", question: activeTopic, transcript: t.transcript, keywords: fw.steps.map((s) => s.label) }),
+        body: JSON.stringify({ mode: "impromptu", question: activeTopic, transcript: t.transcript, keywords: fw.steps.map((s) => s.label), profile: profilePayload() }),
       });
       if (!res.ok) throw new Error(String(res.status));
       analysis = (await res.json()) as AnswerAnalysis;
@@ -325,6 +328,7 @@ export function ImpromptuDrill({ incoming, camera, speak, stopSpeaking }: Props)
           </section>
         ) : (
           <LiveAnswer
+            timeZone={[Math.round(targetSec * 0.5), Math.round(targetSec * 0.85)]}
             armed
             title="What you're saying"
             finishLabel="Finish"

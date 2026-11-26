@@ -16,6 +16,8 @@ import { QuestionCard } from "./QuestionCard";
 import { SafetyNet } from "./SafetyNet";
 import { SessionSummary } from "./SessionSummary";
 import { SetupPanel, type SessionConfig } from "./SetupPanel";
+import { profilePayload } from "@/lib/profile";
+import { logTake } from "@/lib/progress";
 
 type Phase = "setup" | "loading" | "asking" | "answering" | "analyzing" | "report" | "complete";
 
@@ -92,7 +94,7 @@ export function InterviewSimulator() {
         const res = await fetch("/api/interview/questions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(cfg),
+          body: JSON.stringify({ ...cfg, profile: profilePayload() }),
         });
         const data = (await res.json()) as { questions: InterviewQuestion[]; source: "ai" | "offline" };
         setQuestions(data.questions);
@@ -131,6 +133,7 @@ export function InterviewSimulator() {
       analysis: null,
       videoUrl,
     };
+    logTake("interview", metrics, report.presence.total);
     const at = index;
     const put = (r: Report) => setReports((prev) => Object.assign([...prev], { [at]: r }));
     put(report);
@@ -141,7 +144,7 @@ export function InterviewSimulator() {
       const res = await fetch("/api/interview/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: question.text, transcript, keywords: question.keywords, level: config.level, industry: config.industry }),
+        body: JSON.stringify({ question: question.text, transcript, keywords: question.keywords, level: config.level, industry: config.industry, profile: profilePayload() }),
       });
       if (!res.ok) throw new Error(String(res.status));
       analysis = (await res.json()) as AnswerAnalysis;

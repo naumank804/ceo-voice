@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { offlineTopicDraft, type TopicDraft } from "@/lib/leadership";
 import { completeJSON } from "@/lib/openai";
+import { type ProfileInput, profileBlock } from "@/lib/profile-server";
 
 const system = `You turn a text into a short spoken talking-point card for a senior leader who is a non-native English speaker.
 Return JSON:
@@ -29,13 +30,13 @@ function valid(raw: unknown): TopicDraft | null {
 }
 
 export async function POST(req: Request) {
-  const body = (await req.json()) as { title?: string; text?: string };
+  const body = (await req.json()) as { title?: string; text?: string; profile?: ProfileInput };
   const title = (body.title ?? "").trim().slice(0, 120) || "My topic";
   const text = (body.text ?? "").trim().slice(0, 20000);
   if (!text) return NextResponse.json({ error: "Empty text" }, { status: 400 });
 
   try {
-    const draft = valid(await completeJSON(system, `Title: ${title}\n\nText:\n"""\n${text}\n"""`));
+    const draft = valid(await completeJSON(system, `${profileBlock(body.profile)}\n\nTitle: ${title}\n\nText:\n"""\n${text}\n"""`));
     if (draft) return NextResponse.json({ ...draft, source: "ai" });
   } catch (err) {
     console.warn("[topic] falling back to offline draft:", (err as Error).message);

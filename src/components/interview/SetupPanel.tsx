@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { hasProfile, useProfile } from "@/lib/profile";
 import type { Industry, StruggleLevel } from "@/lib/types";
 
 export interface SessionConfig {
@@ -11,6 +12,18 @@ export interface SessionConfig {
 }
 
 const INDUSTRIES: Industry[] = ["Tech", "Finance", "Healthcare", "Consulting", "Marketing", "Operations"];
+/** Map the free-text profile industry onto the simulator's question banks. */
+function industryFrom(text: string): Industry | null {
+  const t = text.toLowerCase();
+  if (/financ|bank|wealth|insur|invest|capital|fintech|asset/.test(t)) return "Finance";
+  if (/health|pharma|medic|hospital|life ?science/.test(t)) return "Healthcare";
+  if (/consult|advisory/.test(t)) return "Consulting";
+  if (/market|brand|advert|media/.test(t)) return "Marketing";
+  if (/operat|supply|logistic|manufactur|retail/.test(t)) return "Operations";
+  if (/tech|software|digital|it|cloud|data|saas/.test(t)) return "Tech";
+  return null;
+}
+
 const LEVELS: { value: StruggleLevel; hint: string }[] = [
   { value: "Beginner", hint: "I freeze often; simple questions please" },
   { value: "Intermediate", hint: "I get through it, but I stumble" },
@@ -19,6 +32,11 @@ const LEVELS: { value: StruggleLevel; hint: string }[] = [
 
 export function SetupPanel({ onStart, busy }: { onStart: (c: SessionConfig) => void; busy: boolean }) {
   const [cfg, setCfg] = useState<SessionConfig>({ industry: "Tech", level: "Intermediate", jobDescription: "", count: 5 });
+  const profile = useProfile();
+  const fromProfile = industryFrom(profile.industry);
+  useEffect(() => {
+    if (fromProfile) setCfg((c) => ({ ...c, industry: fromProfile }));
+  }, [fromProfile]);
 
   return (
     <form
@@ -40,6 +58,12 @@ export function SetupPanel({ onStart, busy }: { onStart: (c: SessionConfig) => v
           Walk through them in order. Over repeated sessions, your brain learns to reach for the anchors on its own —
           that's the point.
         </div>
+        {hasProfile(profile) && (
+          <p className="rounded-lg border border-gold-600/40 bg-gold-500/5 px-4 py-3 text-sm text-graphite-300">
+            <span className="text-gold-400">Tailored to your profile:</span> {[profile.role, profile.industry].filter(Boolean).join(" · ")}. Questions and
+            rewrites will use your background.
+          </p>
+        )}
         <p className="text-xs text-graphite-400">Best in Chrome or Edge. Your microphone is used only in this tab.</p>
       </div>
 

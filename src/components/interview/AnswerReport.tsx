@@ -3,6 +3,8 @@
 import { TakePlayback } from "@/components/camera/CameraMirror";
 import { segmentTranscript } from "@/lib/highlight";
 import type { AnswerReport as Report, GrammarCorrection } from "@/lib/types";
+import { ExecutiveScorecard } from "@/components/ExecutiveScorecard";
+import { scorecardFor } from "@/lib/scorecard";
 
 interface Props {
   report: Report;
@@ -14,7 +16,7 @@ interface Props {
 }
 
 export const PACE_COPY = {
-  "too-slow": "Hesitant — aim for a steady 130–150.",
+  "too-slow": "Hesitant — aim for a steady 120–145.",
   "too-fast": "Rushing — slow down; speed reads as nerves.",
   steady: "Composed, boardroom pace.",
   insufficient: "Too short to measure pace.",
@@ -77,6 +79,15 @@ export function AnswerReport({ report, analyzing, isLast, onRetry, onNext, onHea
           </div>
         </section>
       </div>
+
+      <ExecutiveScorecard
+        sc={scorecardFor(report.transcript, m, report.question.keywords)}
+        transcript={report.transcript}
+        keys={report.question.keywords}
+        analysis={analysis}
+        analyzing={analyzing}
+        onHear={onHear}
+      />
 
       {/* Transcript with annotations */}
       <section className="rounded-xl border border-graphite-800 bg-graphite-950/60 p-6">

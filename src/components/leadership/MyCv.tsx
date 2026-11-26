@@ -4,6 +4,7 @@ import { Fragment, useMemo, useRef, useState } from "react";
 import { primaryButton, secondaryButton, SectionLabel } from "@/components/stage/shared";
 import { cleanPack, type CvPack, hasNumber, lineKind, linesFromText, NUMBER_RE, offlineCvPack, packToCards, questionsForLine, readDocx } from "@/lib/cv";
 import { type AnswerCard, allCards, cheatCode, dueLabel, type LeadershipState, progressOf } from "@/lib/leadership";
+import { profilePayload } from "@/lib/profile";
 
 interface Props {
   state: LeadershipState;
@@ -69,7 +70,7 @@ export function MyCv({ state, update, onPractise, onPrepare }: Props) {
       const res = await fetch("/api/leadership/cv", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lines: cv.lines }),
+        body: JSON.stringify({ lines: cv.lines, profile: profilePayload() }),
       });
       if (res.ok) pack = cleanPack(await res.json());
     } catch {

@@ -26,6 +26,7 @@ import {
 } from "@/lib/stage";
 import type { SpeechMetrics } from "@/lib/types";
 import { Chip, primaryButton, ScoreCard, secondaryButton, SectionLabel, TakeStats } from "./shared";
+import { logTake } from "@/lib/progress";
 
 interface Props {
   speech: SavedSpeech;
@@ -91,6 +92,7 @@ export function RehearsalRoom({ speech, camera, speak, stopSpeaking, onAttempt, 
     const metrics = computeMetrics(t.transcript, t.durationSec);
     const cov = beatCoverage(t.transcript, beats);
     const recall = cov.filter((c) => c >= COVERED).length / beats.length;
+    logTake("stage", metrics);
     const netUsage = level === 1 ? null : t.netUsage;
     const score = scoreTake(metrics, recall, netUsage);
     const rec = recommend(level, recall, !!netUsage);
@@ -198,6 +200,7 @@ export function RehearsalRoom({ speech, camera, speak, stopSpeaking, onAttempt, 
           {phase === "live" && (
             <LiveAnswer
               armed
+              timeZone={null}
               title="What you're saying"
               finishLabel="Finish take"
               finalText={take.finalText}

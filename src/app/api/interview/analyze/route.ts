@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { completeJSON } from "@/lib/openai";
 import { offlineAnalysis } from "@/lib/offline-coach";
+import { type ProfileInput, profileBlock } from "@/lib/profile-server";
 import type { AnswerAnalysis, GrammarCorrection, StruggleLevel } from "@/lib/types";
 
 interface Body {
@@ -11,6 +12,7 @@ interface Body {
   industry?: string;
   /** "impromptu" = an off-the-cuff talk on a topic, structured with a speaking framework. */
   mode?: "interview" | "impromptu";
+  profile?: ProfileInput;
 }
 
 const AUDIENCE = {
@@ -25,7 +27,9 @@ Return JSON:
 {
   "corrections": [{"original": string, "suggestion": string, "reason": string}],
   "executiveRewrite": string,
-  "coachingNote": string
+  "coachingNote": string,
+  "cheatCode": [string, string, string],
+  "fourSentence": [string, string, string, string]
 }
 
 Rules:
@@ -34,6 +38,11 @@ Rules:
   Do not invent errors. An empty list is fine.
 - "executiveRewrite": the candidate's OWN story, rewritten the way a calm, concise senior leader would say it aloud (max ~120 words).
   Keep their facts; never invent numbers — use "[X%]" placeholders where a metric would help. Replace hedging ("I think", "maybe") with ownership ("I led", "I delivered").
+- "cheatCode": three memorable words (one or two words each), one per point of the polished answer, in order. Prefer the anchor keywords when they fit.
+- "fourSentence": the SAME polished answer in exactly four short spoken sentences, each max 22 words, active voice, no hedging.
+  Sentence 1 is the headline (the answer in one line). Sentences 2-4 start "First,", "Second,", "Third," and match the cheat code.
+  Use only the candidate's facts (and their profile, if given); use "[X]" where a number would help.
+- If a candidate profile is given, use their role and real metrics to make the rewrite sound like them. Never invent beyond it.
 - "coachingNote": ONE direct sentence naming the single most important fix, referencing a specific topic from their answer.
   Example: "You sounded unsure when discussing your Python skills — say 'I built' instead of 'I kind of worked on'."`;
 
@@ -47,7 +56,16 @@ function sanitize(raw: unknown, transcript: string): AnswerAnalysis | null {
     .filter((c) => lower.includes(c.original.toLowerCase()))
     .slice(0, 5)
     .map((c) => ({ original: c.original, suggestion: c.suggestion, reason: String(c.reason ?? "") }));
-  return { corrections, executiveRewrite: r.executiveRewrite, coachingNote: r.coachingNote, source: "ai" };
+  const words = (v: unknown, n: number) =>
+    Array.isArray(v) && v.length >= n && v.slice(0, n).every((x) => typeof x === "string" && x.trim()) ? (v.slice(0, n) as string[]).map((x) => x.trim()) : undefined;
+  return {
+    corrections,
+    executiveRewrite: r.executiveRewrite,
+    coachingNote: r.coachingNote,
+    cheatCode: words(r.cheatCode, 3),
+    fourSentence: words(r.fourSentence, 4),
+    source: "ai",
+  };
 }
 
 export async function POST(req: Request) {
@@ -62,6 +80,7 @@ export async function POST(req: Request) {
       [
         `${mode === "impromptu" ? "Topic" : "Question"}: ${body.question}`,
         `Industry: ${body.industry ?? "General"}; English level: ${body.level ?? "Intermediate"}`,
+        profileBlock(body.profile),
         `${mode === "impromptu" ? "Speaking framework steps" : "Anchor keywords"} they were encouraged to use: ${(body.keywords ?? []).join(", ")}`,
         `Transcript:\n"""\n${transcript}\n"""`,
       ].join("\n"),
