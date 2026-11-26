@@ -193,7 +193,14 @@ export function MyCv({ state, update, onPractise, onPrepare }: Props) {
             <button type="button" disabled={!!busy} onClick={() => void generate()} className={`${primaryButton} w-full`}>
               {busy ?? (cvCards.length ? "Regenerate questions" : "Find my likely questions")}
             </button>
-            {cvCards.length > 0 && <p className="text-xs text-graphite-400">Regenerating replaces CV questions you haven&apos;t edited elsewhere.</p>}
+            <button type="button" disabled={!!busy} onClick={() => packRef.current?.click()} className={`${secondaryButton} w-full`}>
+              Import a prep pack (.json)
+            </button>
+            {cvCards.length > 0 && (
+              <p className="text-xs text-graphite-400">
+                Regenerating or importing a pack replaces your CV questions. Practice progress is kept for questions with the same topic.
+              </p>
+            )}
             {error && <p className="text-sm text-signal-amber">{error}</p>}
           </div>
 
@@ -222,9 +229,6 @@ export function MyCv({ state, update, onPractise, onPrepare }: Props) {
           <div className="space-y-2 rounded-xl border border-graphite-800 bg-graphite-950/60 p-5 text-sm">
             <button type="button" onClick={() => fileRef.current?.click()} className="block text-graphite-300 underline-offset-4 hover:underline">
               Import an updated CV
-            </button>
-            <button type="button" onClick={() => packRef.current?.click()} className="block text-graphite-300 underline-offset-4 hover:underline">
-              Import a prep pack (.json)
             </button>
             {confirmRemove ? (
               <span className="flex items-center gap-2 text-graphite-300">
