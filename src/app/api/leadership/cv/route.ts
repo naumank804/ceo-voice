@@ -11,7 +11,7 @@ Predict the questions a sharp interviewer will ask about THIS CV, and prepare sp
 Return JSON:
 {
   "questions": [{
-    "topic": string,          // 2-5 word label, e.g. "Lynx $50M program"
+    "topic": string,          // 2-5 word label, e.g. "Payments platform program"
     "question": string,       // how the interviewer would actually ask it
     "cvMatch": string[],      // 1-4 SHORT phrases (2-6 words) copied EXACTLY from the CV that this question probes
     "opening": string,        // one confident first sentence that ends by announcing three points
@@ -30,7 +30,7 @@ Rules for questions (aim for 14):
 - Use ONLY facts in the CV. Never invent numbers, names or outcomes. If a detail would help but isn't in the CV, write "[add example]".
 - Plain, confident English for a non-native speaker. No buzzword chains.
 
-Rules for facts (aim for 20): one precise question each, addressed to the candidate ("Your largest budget?", "Budget of the Lynx program?") with a short exact answer from the CV ("$50M").
+Rules for facts (aim for 20): one precise question each, addressed to the candidate ("Your largest budget?", "Budget of the payments program?") with a short exact answer from the CV ("$50M").
 Never include phone numbers, emails or addresses.`;
 
 export async function POST(req: Request) {

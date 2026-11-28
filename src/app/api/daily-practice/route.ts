@@ -1,11 +1,23 @@
 import { listTopics } from "@/lib/content-store";
 import { dailyPlan, renderDailyEmail } from "@/lib/daily-email";
-import { libraryCard } from "@/lib/leadership";
+import { findUserId, getUserData, normaliseEmail } from "@/lib/auth";
+import { type AnswerCard, INTERVIEW_CATEGORIES, type LeadershipState, libraryCard } from "@/lib/leadership";
 
 // Called once a day by Vercel Schedules (see vercel.json). The route is public, so
 // every request must carry the CRON_SECRET that Vercel sends as a bearer token.
 //   GET                → send today's email
 //   GET ?preview=1     → return today's email as HTML without sending (still needs the secret)
+
+/** The reader's own interview answers, from their account's synced practice data. */
+async function ownAnswers(email: string | undefined): Promise<AnswerCard[]> {
+  const addr = normaliseEmail(email?.split(",")[0]);
+  if (!addr) return [];
+  const id = await findUserId(addr);
+  const raw = id ? (await getUserData(id))?.data["ceo-voice.leadership"] : undefined;
+  if (!raw) return [];
+  const s = JSON.parse(raw) as Partial<LeadershipState>;
+  return (s.custom ?? []).filter((c) => INTERVIEW_CATEGORIES.includes(c.category) && c.pillars?.length);
+}
 
 const APP_URL = process.env.APP_URL || "https://ceo-voice-iota.vercel.app";
 
@@ -19,7 +31,8 @@ export async function GET(request: Request) {
   const library = await listTopics()
     .then((ts) => ts.filter((t) => t.published).map(libraryCard))
     .catch(() => []);
-  const plan = dailyPlan(new Date(), "America/Toronto", library);
+  const own = await ownAnswers(process.env.DAILY_EMAIL_TO).catch(() => []);
+  const plan = dailyPlan(new Date(), "America/Toronto", library, own);
   const email = renderDailyEmail(plan, APP_URL);
   if (new URL(request.url).searchParams.get("preview")) {
     return new Response(email.html, { headers: { "Content-Type": "text/html; charset=utf-8" } });

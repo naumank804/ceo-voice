@@ -27,11 +27,14 @@ function pick<T>(list: T[], day: number, salt: number): T {
   return list[(day * 7 + salt) % list.length];
 }
 
-/** `library` = published Topic Library cards; they rotate into step 3 alongside leadership craft. */
-export function dailyPlan(now = new Date(), timeZone = "America/Toronto", library: AnswerCard[] = []): DailyPlan {
+/**
+ * `library` = published Topic Library cards; they rotate into step 3 alongside leadership craft.
+ * `own` = the reader's own interview answers (from their account); the built-in examples are the fallback.
+ */
+export function dailyPlan(now = new Date(), timeZone = "America/Toronto", library: AnswerCard[] = [], own: AnswerCard[] = []): DailyPlan {
   const date = new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
   const day = Math.floor(Date.parse(`${date}T00:00:00Z`) / 86_400_000);
-  const interview = DEFAULT_CARDS.filter((c) => INTERVIEW_CATEGORIES.includes(c.category));
+  const interview = own.length ? own : DEFAULT_CARDS.filter((c) => INTERVIEW_CATEGORIES.includes(c.category));
   const craft = [...DEFAULT_CARDS.filter((c) => c.category === "Craft"), ...library];
   const bridges = BRIDGE_PHRASES.flatMap((g) => g.phrases.map((phrase) => ({ group: g.group, phrase })));
   return {

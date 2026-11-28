@@ -82,6 +82,11 @@ export async function findOrCreateUser(email: string): Promise<User> {
   return user;
 }
 
+/** The user id for an email, without creating an account. */
+export async function findUserId(email: string): Promise<string | null> {
+  return (await redis().get<string>(`${P}:email:${email}`)) ?? null;
+}
+
 export async function createSession(userId: string): Promise<string> {
   const token = randomBytes(32).toString("base64url");
   await redis().set(`${P}:session:${sha(token)}`, userId, { ex: SESSION_TTL });

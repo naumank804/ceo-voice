@@ -29,7 +29,7 @@ const HABITS = [
 
 export function Toolkit({ state, speak, onOpen, onDrillFacts, onGoCv }: Props) {
   const cards = allCards(state);
-  const pitch = cards.find((c) => c.id === "about-me");
+  const pitch = (cards.find((c) => c.id === "about-me") ?? cards.find((c) => c.id === "ex-about-me"));
   const firstPhrases = BRIDGE_PHRASES.map((g) => ({ group: g.group, phrase: g.phrases[0] }));
 
   return (

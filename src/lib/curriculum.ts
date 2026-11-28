@@ -223,6 +223,12 @@ export function trackOf(stageId: string | undefined): Track | undefined {
 
 /** Built-in cards placed on the roadmap. Anything unmapped falls back by category. */
 const BUILT_IN_STAGE: Record<string, string> = {
+  "ex-about-me": "int-foundations",
+  "ex-why-role": "int-foundations",
+  "ex-stakeholder": "int-behavioral",
+  "ex-mistake": "int-behavioral",
+  "ex-your-questions": "int-closing",
+  // Older built-in ids, now the owner's own imported cards; kept so their stages stay the same.
   "about-me": "int-foundations",
   "why-us": "int-foundations",
   "your-questions": "int-closing",

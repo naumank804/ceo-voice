@@ -15,6 +15,9 @@ import {
   cheatCode,
   DEFAULT_CARDS,
   dueLabel,
+  exportAnswers,
+  importAnswers,
+  INTERVIEW_CATEGORIES,
   type LeadershipState,
   levelInfo,
   progressOf,
@@ -142,6 +145,7 @@ export function AnswerLab({ state, update, camera, speak, stopSpeaking, openId, 
           )}
         </div>
       </div>
+      {!talk && !library && <AnswersFile state={state} update={update} />}
       <div className="flex flex-wrap gap-2">
         {FILTERS.map((f) => (
           <Chip key={f} active={filter === f} onClick={() => setFilter(f)}>
@@ -193,6 +197,57 @@ export function AnswerLab({ state, update, camera, speak, stopSpeaking, openId, 
           );
         })}
       </ul>
+    </div>
+  );
+}
+
+/** Import / export of the learner's own interview answers, plus the examples toggle. */
+function AnswersFile({ state, update }: { state: LeadershipState; update: Props["update"] }) {
+  const [msg, setMsg] = useState<string | null>(null);
+  const own = state.custom.filter((c) => INTERVIEW_CATEGORIES.includes(c.category)).length;
+  const showing = state.showExamples ?? own === 0;
+
+  const onFile = async (f: File | undefined) => {
+    if (!f) return;
+    try {
+      const parsed = JSON.parse(await f.text()) as unknown;
+      const result = importAnswers(state, parsed); // validates and counts; throws on a bad file
+      update((s) => importAnswers(s, parsed).state);
+      setMsg(`Imported ${result.added} answer${result.added === 1 ? "" : "s"}${result.skipped ? ` (${result.skipped} you already had were kept as they are)` : ""}. They now save to your account.`);
+    } catch (e) {
+      setMsg((e as Error).message || "Couldn't read that file.");
+    }
+  };
+
+  const onExport = () => {
+    const blob = new Blob([JSON.stringify(exportAnswers(state), null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "CEO Voice - my interview answers.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-xl border border-graphite-800 bg-graphite-950/40 px-4 py-3 text-sm">
+      <span className="mr-auto text-graphite-400">
+        {own ? `${own} answer${own === 1 ? "" : "s"} of your own` : "No answers of your own yet. Add one, or import a file of answers."}
+      </span>
+      <label className={`${secondaryButton} cursor-pointer px-3 py-1.5 text-xs`}>
+        Import answers (.json)
+        <input type="file" accept="application/json,.json" className="hidden" onChange={(e) => void onFile(e.target.files?.[0]).then(() => (e.target.value = ""))} />
+      </label>
+      {own > 0 && (
+        <button type="button" onClick={onExport} className={`${secondaryButton} px-3 py-1.5 text-xs`}>
+          Export my answers
+        </button>
+      )}
+      {own > 0 && (
+        <button type="button" onClick={() => update((s) => ({ ...s, showExamples: !showing }))} className="px-2 py-1.5 text-xs text-graphite-400 underline-offset-4 hover:underline">
+          {showing ? "Hide examples" : "Show examples"}
+        </button>
+      )}
+      {msg && <p className="w-full text-xs text-gold-400">{msg}</p>}
     </div>
   );
 }

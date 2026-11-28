@@ -65,720 +65,162 @@ export interface AnswerCard {
 }
 
 const BASE_CARDS: AnswerCard[] = [
+  // Neutral examples that suit any profession. They show the shape (opening, three pillars,
+  // landing line). Each learner's own answers live in their account, never in this file.
   {
-    id: "about-me",
+    id: "ex-about-me",
     category: "Business",
     topic: "Tell me about yourself",
     question: "Tell me about yourself and your background.",
-    opening: `I am a technology delivery and strategic alignment executive with over 20 years of experience leading enterprise digital transformation across Canadian financial institutions and insurance. My career is built on three core pillars.`,
+    opening: `I'm a professional with [X] years of experience in [your field], and my career is built on three strengths.`,
     pillars: [
       {
-        key: "Scale",
-        tag: "$50M+",
-        title: "Large-Scale Delivery",
-        text: `First, Large-Scale Delivery: I have directed digital portfolios exceeding $50M, leading cross-functional agile squads across modern cloud, trading, and core modernization programs.`,
-        cues: ["scale", "portfolio", "50", "squads", "large"],
+        key: "Expertise",
+        tag: "Your craft",
+        title: "Deep Expertise",
+        text: `First, Expertise: I have built strong skills in [your core area], and I'm known for getting the details right on work that matters.`,
+        cues: ["expertise", "skills", "experience", "known"],
       },
       {
-        key: "Security",
-        tag: "AVP Risk",
-        title: "Technology Risk & Security",
-        text: `Second, Technology Risk & Security: At Canada Life as AVP, I led enterprise security, Identity and Access Management, and pre-go-live risk governance across our wealth and dealership platforms.`,
-        cues: ["security", "risk", "identity", "governance", "Canada"],
+        key: "Results",
+        tag: "One number",
+        title: "Measurable Results",
+        text: `Second, Results: In my last role I [delivered a result], which [saved time, money or risk] by [a number].`,
+        cues: ["results", "delivered", "saved", "improved"],
       },
       {
-        key: "Business Value",
-        tag: "TD",
-        title: "Strategic Business Alignment",
-        text: `Third, Strategic Business Alignment: At TD, I modernized critical direct investing channels like Active Trader, translating executive strategy into high-velocity digital capabilities.`,
-        cues: ["alignment", "strategic", "trader", "investing", "business"],
-      },
-    ],
-    close: `I specialize in bridging executive strategy with engineering execution, scaling delivery velocity safely in highly regulated environments.`,
-  },
-  {
-    id: "velocity",
-    category: "Technical",
-    topic: "Delivery velocity",
-    question: "How do you maintain high delivery velocity across multiple squads without compromising quality?",
-    opening: `To maintain high delivery velocity across squads, I embed three core mechanisms into our delivery model.`,
-    pillars: [
-      {
-        key: "Automation",
-        tag: "CI/CD",
-        title: "Automation",
-        text: `First, Automation: We eliminate manual bottlenecks by investing in automated testing, CI/CD pipelines, and DevOps. Automating quality gates allows teams to release faster with fewer defects.`,
-        cues: ["automation", "automated", "pipelines", "devops", "testing"],
-      },
-      {
-        key: "Roadblocks",
-        tag: "Daily triage",
-        title: "Rapid Roadblock Removal",
-        text: `Second, Rapid Roadblock Removal: Velocity dies when dependencies sit idle. I run a daily triage cadence with engineering leads and vendor partners to clear blockers in hours, not weeks.`,
-        cues: ["roadblock", "blockers", "triage", "dependencies"],
-      },
-      {
-        key: "Phased MVP",
-        tag: "Small slices",
-        title: "A Phased MVP Approach",
-        text: `Third, A Phased MVP Approach: Instead of risky big-bang releases, we deliver in smaller, incremental production slices. This de-risks the launch and delivers continuous value to our business partners.`,
-        cues: ["MVP", "phased", "incremental", "slices", "big-bang"],
-      },
-    ],
-    close: `This balance of automation, proactive triage, and phased delivery keeps velocity high without burning out teams.`,
-  },
-  {
-    id: "lead-leaders",
-    category: "Leadership",
-    topic: "Leading other leaders",
-    question: "You will be leading other senior managers and practice leads. How do you lead through other leaders and ensure accountability?",
-    opening: `When leading other leaders, I focus on three simple principles.`,
-    pillars: [
-      {
-        key: "Outcomes",
-        tag: "OKRs",
-        title: "Define Clear Outcomes",
-        text: `First, Define Clear Outcomes: I establish the what, not the how. I set transparent OKRs and business targets so every delivery manager understands their milestones.`,
-        cues: ["outcomes", "OKRs", "targets", "milestones"],
-      },
-      {
-        key: "Autonomy",
+        key: "People",
         tag: "Trust",
-        title: "Give Them Autonomy",
-        text: `Second, Give Them Autonomy: I do not micromanage. I empower my leaders to make decisions and run their squads, while my role is to clear organizational roadblocks and support them.`,
-        cues: ["autonomy", "micromanage", "empower", "trust"],
-      },
-      {
-        key: "Cadence",
-        tag: "Metrics",
-        title: "Maintain Structured Cadence",
-        text: `Third, Maintain Structured Cadence: I hold regular 1-on-1s and review delivery health metrics: sprint velocity, defect escape rates, and open risks.`,
-        cues: ["cadence", "metrics", "1-on-1s", "health", "defect"],
+        title: "Working Through People",
+        text: `Third, People: I work well across teams. I build trust early, so people bring me problems before they become crises.`,
+        cues: ["people", "teams", "trust", "stakeholders"],
       },
     ],
-    close: `That gives my leaders complete ownership while keeping portfolio delivery aligned and accountable.`,
+    close: `That's why I'm excited about this role at {company}: it uses all three on day one.`,
   },
   {
-    id: "stakeholders",
-    category: "Business",
-    topic: "Demanding stakeholders",
-    question: "How do you handle demanding business partners who push for unrealistic deadlines or out-of-cycle scope?",
-    opening: `When managing demanding stakeholders, my principle is simple: never just say no. Bring the data and offer trade-offs. I follow three steps.`,
+    id: "ex-why-role",
+    category: "Role",
+    topic: "Why this role",
+    question: "Why do you want this role, and why now?",
+    opening: `There are three reasons this role is the right next step for me.`,
     pillars: [
       {
-        key: "Empathy",
-        tag: "Align",
-        title: "Empathy",
-        text: `First, Empathy: I align with their business intent first. I make sure they know I want to hit their commercial target, so we start on the exact same team.`,
-        cues: ["empathy", "intent", "same team", "align"],
+        key: "Fit",
+        tag: "Skills match",
+        title: "A Strong Fit",
+        text: `First, Fit: The role needs [the key skill in the job description], which is exactly what I've done for the last few years.`,
+        cues: ["fit", "match", "skills", "experience"],
       },
       {
-        key: "Data",
-        tag: "Capacity",
-        title: "Objective Data",
-        text: `Second, Objective Data: I remove personal opinions from the table. I show transparent capacity models: team velocity, resource allocation, and existing release commitments.`,
-        cues: ["data", "capacity", "objective", "allocation"],
+        key: "Growth",
+        tag: "Next level",
+        title: "The Right Stretch",
+        text: `Second, Growth: It gives me more scope, with bigger decisions and more impact, which is where I want to grow next.`,
+        cues: ["growth", "scope", "impact", "next"],
       },
       {
-        key: "Trade-offs",
-        tag: "Options",
-        title: "Clear Trade-offs",
-        text: `Third, Clear Trade-offs: I put the strategic decision in their hands: "We can accelerate feature A, but it means pausing initiative B. Which one delivers greater immediate business value?"`,
-        cues: ["trade-off", "tradeoffs", "options", "accelerate", "pausing"],
+        key: "Mission",
+        tag: "Why them",
+        title: "Their Mission",
+        text: `Third, Mission: I respect what {company} is building, and I want my work to contribute to it directly.`,
+        cues: ["mission", "values", "building", "contribute"],
       },
     ],
-    close: `That protects team bandwidth while building genuine trust with executive business partners.`,
+    close: `So it's the right skills, the right stretch, and the right place.`,
   },
   {
-    id: "burnout",
+    id: "ex-stakeholder",
     category: "Leadership",
-    topic: "Preventing burnout",
-    question: "High-pressure digital environments can strain teams. How do you recognize burnout across your delivery squads, and what do you do to prevent it?",
-    opening: `Preventing burnout is essential for sustaining long-term delivery velocity. I manage it through three actions.`,
+    topic: "Difficult stakeholder",
+    question: "Tell me about a time you worked with a difficult stakeholder.",
+    opening: `With difficult stakeholders, I follow three steps, and one example shows how.`,
     pillars: [
       {
-        key: "Signals",
-        tag: "Defects",
-        title: "Watch the Early Signals",
-        text: `First, Watch the Early Signals: I monitor delivery data and team behavior. Rising defect rates, missed sprint targets, or silence during retrospectives are immediate red flags that squads are overwhelmed.`,
-        cues: ["signals", "red flags", "retrospectives", "monitor", "defect"],
+        key: "Listen",
+        tag: "Understand first",
+        title: "Listen First",
+        text: `First, Listen: I met them one-to-one to understand what they really needed and what worried them. Usually the conflict is about a hidden concern.`,
+        cues: ["listen", "understand", "concern", "needed"],
       },
       {
-        key: "Workload",
-        tag: "Protect scope",
-        title: "Re-balance the Workload",
-        text: `Second, Re-balance the Workload: I actively protect sprint boundaries. I don't allow unplanned scope creep, and I work with business partners to shift non-critical deliverables to future cycles.`,
-        cues: ["workload", "rebalance", "scope", "boundaries", "creep"],
+        key: "Align",
+        tag: "Shared goal",
+        title: "Find the Shared Goal",
+        text: `Second, Align: I tied the work back to a goal we both cared about, so the conversation moved from "me versus you" to "us versus the problem".`,
+        cues: ["align", "goal", "shared", "together"],
       },
       {
-        key: "Recovery",
-        tag: "Downtime",
-        title: "Enforce Recovery",
-        text: `Third, Enforce Recovery: After a high-stakes deployment or intense milestone, I make sure teams decompress. We publicly celebrate their wins, recognize key contributors, and give them breathing room before kicking off the next heavy sprint.`,
-        cues: ["recovery", "decompress", "celebrate", "breathing", "recognize"],
+        key: "Follow through",
+        tag: "Keep promises",
+        title: "Follow Through",
+        text: `Third, Follow through: I kept them updated, delivered what I promised, and the relationship became one of my strongest.`,
+        cues: ["follow", "updated", "delivered", "relationship"],
       },
     ],
-    close: `Protecting team energy keeps our attrition low and delivery consistent.`,
+    close: `Difficult stakeholders often become your best allies when they feel heard.`,
   },
   {
-    id: "security",
-    category: "Technical",
-    topic: "Risk & platform security",
-    question: "How do you embed governance and security into fast-paced digital delivery without slowing down teams?",
-    opening: `I treat security as an enabler of speed, not an afterthought. I balance delivery velocity and security through three practices.`,
-    pillars: [
-      {
-        key: "Shift-Left",
-        tag: "Pipelines",
-        title: "Shift-Left Security",
-        text: `First, Shift-Left Security: We embed automated vulnerability scanning and code quality checks directly into our CI/CD pipelines. Developers catch security flaws in real time before code merges to main branches.`,
-        cues: ["shift-left", "shift", "scanning", "vulnerability", "pipelines"],
-      },
-      {
-        key: "Pre-Go-Live",
-        tag: "Gates",
-        title: "Pre-Go-Live Risk Gates",
-        text: `Second, Pre-Go-Live Risk Gates: We conduct threat modeling, penetration testing, and access governance reviews during design and sprint testing, not at the finish line.`,
-        cues: ["go-live", "gates", "threat", "penetration", "modeling"],
-      },
-      {
-        key: "Single View",
-        tag: "Dashboard",
-        title: "A Centralized Risk Dashboard",
-        text: `Third, A Centralized Risk Dashboard: I establish a single governance view across the portfolio. Delivery squads, security officers, and executive stakeholders have complete visibility into open risks and remediation timelines.`,
-        cues: ["dashboard", "single", "centralized", "visibility", "remediation"],
-      },
-    ],
-    close: `This allows squads to deploy fast with zero compliance surprises at release time.`,
-  },
-  {
-    id: "ai",
-    category: "Technical",
-    topic: "Applied AI",
-    question: "AI is on every executive roadmap. How do you approach implementing applied AI and automation practically in an enterprise?",
-    opening: `My approach to enterprise AI is grounded in practical business value, not hype. I apply three clear rules.`,
-    pillars: [
-      {
-        key: "Solve",
-        tag: "Bottlenecks",
-        title: "Solve Real Bottlenecks",
-        text: `First, Solve Real Bottlenecks: I target high-friction, repetitive operational workflows, like automated data reconciliation, support ticket triage, or synthetic test data generation.`,
-        cues: ["bottlenecks", "repetitive", "reconciliation", "friction", "workflows"],
-      },
-      {
-        key: "Safeguard",
-        tag: "Compliance",
-        title: "Safeguard the Data",
-        text: `Second, Safeguard the Data: In financial services, security and compliance come first. We establish strict guardrails around sensitive client data, model hallucinations, and regulatory explainability.`,
-        cues: ["safeguard", "guardrails", "hallucinations", "explainability", "compliance"],
-      },
-      {
-        key: "Scale",
-        tag: "Pilots",
-        title: "Scale Through MVPs",
-        text: `Third, Scale Through MVPs: I avoid multi-year bets upfront. We run small, contained proof-of-concepts, validate the ROI with a pilot user group, and only scale what proves measurable business impact.`,
-        cues: ["pilot", "proof-of-concept", "concept", "ROI", "MVPs"],
-      },
-    ],
-    close: `That drives tangible operational efficiency while keeping risk strictly controlled.`,
-  },
-  {
-    id: "portfolio",
-    category: "Business",
-    topic: "Managing a portfolio",
-    question: "Tell me about your experience managing a technology portfolio rather than just individual projects.",
-    opening: `Managing a technology portfolio is fundamentally about maximizing business value, managing capital, and optimizing systemic capacity across multiple initiatives. I focus on three core disciplines.`,
-    pillars: [
-      {
-        key: "Prioritization",
-        tag: "ROI",
-        title: "Strategic Prioritization",
-        text: `First, Strategic Prioritization: I partner with business executives to establish an objective intake model. We prioritize initiatives based on clear business outcomes: customer acquisition, operational efficiency, regulatory compliance, and direct ROI.`,
-        cues: ["prioritization", "prioritize", "intake", "ROI"],
-      },
-      {
-        key: "Governance",
-        tag: "Stage-gates",
-        title: "Financial & Risk Governance",
-        text: `Second, Financial & Risk Governance: I oversee the overall portfolio capital allocation and burn rate. I implement disciplined stage-gate funding, releasing capital in tranches based on milestone validation, while ensuring risk and OSFI compliance gates are met upfront.`,
-        cues: ["governance", "stage-gate", "capital", "burn", "OSFI", "tranches"],
-      },
-      {
-        key: "Orchestration",
-        tag: "Dependencies",
-        title: "Cross-Portfolio Orchestration",
-        text: `Third, Cross-Portfolio Orchestration: I maintain a centralized "single pane of glass" portfolio view tracking shared services, vendor commitments, and critical path dependencies across squads, resolving resource contention before it impacts delivery dates.`,
-        cues: ["orchestration", "dependencies", "pane", "critical path", "contention"],
-      },
-    ],
-    close: `This approach keeps multi-million dollar portfolios aligned with commercial strategy while maintaining predictable delivery.`,
-  },
-  {
-    id: "business-case",
-    category: "Business",
-    topic: "Business case & funding",
-    question: "How do you approach business case development and funding decisions?",
-    opening: `I treat business case development and funding as a continuous investment lifecycle, using three core principles.`,
-    pillars: [
-      {
-        key: "Outcome-Led",
-        tag: "TCO",
-        title: "Outcome-Led Justification",
-        text: `First, Outcome-Led Justification: I anchor every case in tangible commercial outcomes rather than technical features: revenue growth, cost reduction, or risk mitigation, with a transparent Total Cost of Ownership.`,
-        cues: ["outcome", "TCO", "total cost", "ownership", "revenue"],
-      },
-      {
-        key: "Tranche-Funding",
-        tag: "Gates",
-        title: "Tranche-Based Funding",
-        text: `Second, Tranche-Based Funding: I move away from funding entire multi-year programs upfront. Funding is released in phased tranches tied to delivery gates, unlocking the next phase only after validating an MVP or hitting production milestones.`,
-        cues: ["tranche", "tranches", "phased", "unlocking", "gates"],
-      },
-      {
-        key: "Measurable-ROI",
-        tag: "Post-launch",
-        title: "Measurable Value Realization",
-        text: `Third, Measurable Value Realization: I establish post-implementation reviews at 90 and 180 days to compare projected ROI against actual operational metrics, like user adoption, cycle-time savings, or platform run-cost efficiencies.`,
-        cues: ["measurable", "realization", "post-implementation", "180", "adoption"],
-      },
-    ],
-    close: `This protects enterprise capital and ensures tech spend delivers real commercial value.`,
-  },
-  {
-    id: "icb",
-    category: "Business",
-    topic: "Investment & corporate banking",
-    question: "What is your experience in the Investment and Corporate Banking space?",
-    opening: `I bridge directly into Investment and Corporate Banking through three core enterprise capabilities.`,
-    pillars: [
-      {
-        key: "Trading Execution",
-        tag: "Active Trader",
-        title: "High-Speed Trading Platforms",
-        text: `First, High-Speed Trading Platforms: At TD, I led delivery for Active Trader. We managed high-concurrency order placement, real-time market data streaming, and low-latency execution where platform stability was critical.`,
-        cues: ["trading", "trader", "latency", "market data", "concurrency"],
-      },
-      {
-        key: "Institutional Security",
-        tag: "IAM",
-        title: "Institutional Security & Access",
-        text: `Second, Institutional Security & Access: At Canada Life, I led wealth dealership technology. We managed advisor portals and institutional networks, putting in strict Identity and Access Management to safeguard high-value client transactions.`,
-        cues: ["institutional", "identity", "access", "advisor", "dealership"],
-      },
-      {
-        key: "Regulatory Compliance",
-        tag: "OSFI",
-        title: "Regulatory & Risk Governance",
-        text: `Third, Regulatory & Risk Governance: Across both environments, we operated under strict OSFI and CIRO regulations. I built risk gates directly into our delivery pipelines so audit, security, and compliance were verified before production.`,
-        cues: ["regulatory", "OSFI", "CIRO", "regulations", "audit"],
-      },
-    ],
-    close: `The products change, but the core challenges, high transaction volume, zero downtime, and heavy regulation, are exactly the same.`,
-  },
-  {
-    id: "tradeoff",
-    category: "Technical",
-    topic: "A technical trade-off",
-    question: "Tell me about a technical trade-off you made and how you justified it to executive leadership.",
-    opening: `During our platform modernization program, I managed a critical architectural trade-off.`,
-    pillars: [
-      {
-        key: "Choice",
-        tag: "Phased vs big-bang",
-        title: "The Choice",
-        text: `The Choice: We had to choose between a big-bang replacement of our core systems or an incremental, API-driven phased rollout. Big-bang appeared faster on paper, but carried extreme operational risk to live transaction processing. The phased approach required temporary integration adapters, adding minor short-term architectural overhead.`,
-        cues: ["choice", "choose", "big-bang", "rollout", "adapters"],
-      },
-      {
-        key: "Justification",
-        tag: "Risk",
-        title: "The Justification",
-        text: `The Justification: I justified the phased model based on business continuity and risk governance. I proved that a major outage would breach client SLAs and damage trust. Phased delivery allowed us to pilot critical lines first, stabilize under real traffic, and then safely migrate the rest.`,
-        cues: ["justified", "justification", "continuity", "outage", "SLAs"],
-      },
-      {
-        key: "Outcome",
-        tag: "Zero downtime",
-        title: "The Outcome",
-        text: `The Outcome: We delivered the entire suite on schedule with zero production downtime, protecting core client operations.`,
-        cues: ["outcome", "downtime", "schedule", "zero", "delivered"],
-      },
-    ],
-    close: ``,
-  },
-  {
-    id: "why-us",
-    category: "Business",
-    topic: "Why this company?",
-    question: "Why are you interested in {company}, and why this role specifically?",
-    opening: `{Company} stands out to me for three reasons.`,
-    pillars: [
-      {
-        key: "Market Leadership",
-        tag: "Scale",
-        title: "Market Leadership",
-        text: `First, Market Leadership: {company} has an exceptional reputation in financial services, operating at an enterprise scale where technology delivery directly impacts millions of clients.`,
-        cues: ["market", "leadership", "reputation", "millions"],
-      },
-      {
-        key: "Digital Scale",
-        tag: "Cloud",
-        title: "Digital as a Differentiator",
-        text: `Second, Digital as a Differentiator: I see {company} actively prioritizing digital client experience and cloud modernization as core growth engines, which aligns perfectly with my background in leading large-scale transformations.`,
-        cues: ["digital", "differentiator", "cloud", "client experience"],
-      },
-      {
-        key: "Culture of Trust",
-        tag: "Governance",
-        title: "Culture of Trust",
-        text: `Third, Culture of Trust: {company} stands out for stability, client focus, and strong governance, an environment where I can drive high delivery velocity safely.`,
-        cues: ["culture", "trust", "stability", "client focus"],
-      },
-    ],
-    close: ``,
-  },
-  {
-    id: "your-questions",
-    category: "Business",
-    topic: "Your questions for them",
-    question: "We're near the end. Do you have any questions for us?",
-    opening: `Yes, thank you. I have three questions.`,
-    pillars: [
-      {
-        key: "First 90 Days",
-        tag: "Success",
-        title: "What success looks like",
-        text: `First: What would success look like for this role in the first 90 days, and what is the biggest delivery challenge the portfolio is facing right now?`,
-        cues: ["90", "success", "first", "challenge"],
-      },
-      {
-        key: "Partnership",
-        tag: "Business",
-        title: "How tech and business partner",
-        text: `Second: How does the technology delivery team partner with the business today? Where is that partnership strongest, and where would you like it to grow?`,
-        cues: ["partner", "partnership", "grow", "strongest"],
-      },
-      {
-        key: "Roadmap",
-        tag: "AI & digital",
-        title: "Where the role goes next",
-        text: `Third: As digital and AI priorities scale across the organization, how do you see this role shaping the technology roadmap over the next two years?`,
-        cues: ["roadmap", "two years", "shaping", "priorities"],
-      },
-    ],
-    close: `Thank you. This has been a great conversation, and I'm genuinely excited about the opportunity.`,
-  },
-  // ── Technical ──
-  {
-    id: "cloud-migration",
-    category: "Technical",
-    topic: "Cloud migration",
-    question: "How would you approach migrating a legacy core platform to the cloud?",
-    opening: `I treat cloud migration as a business risk program, not just an infrastructure move. I run it in three stages.`,
-    pillars: [
-      {
-        key: "Assess",
-        tag: "6 Rs",
-        title: "Assess the Portfolio",
-        text: `First, Assess: We map every application and its dependencies, then decide the right path for each one: rehost, replatform, refactor, or retire. Not everything should move, and not everything should move the same way.`,
-        cues: ["assess", "rehost", "refactor", "retire", "dependencies"],
-      },
-      {
-        key: "Landing Zone",
-        tag: "Guardrails",
-        title: "Build a Secure Landing Zone",
-        text: `Second, Landing Zone: Before any workload moves, we build the foundation: identity and access, network segmentation, encryption, logging, and cost controls, all as code. That way security and compliance are built in, not bolted on.`,
-        cues: ["landing", "foundation", "encryption", "guardrails", "as code"],
-      },
-      {
-        key: "Waves",
-        tag: "Pilot first",
-        title: "Migrate in Waves",
-        text: `Third, Waves: We start with a low-risk pilot, prove performance and rollback, then migrate in planned waves. Critical systems move last, once the team and the tooling are proven.`,
-        cues: ["waves", "pilot", "rollback", "wave"],
-      },
-    ],
-    close: `That approach reduces risk, controls cost, and keeps the business running while we modernize.`,
-  },
-  {
-    id: "architecture",
-    category: "Technical",
-    topic: "Architecture decisions",
-    question: "How do you make and govern architecture decisions across many squads?",
-    opening: `I want squads to move fast without creating a patchwork of systems. I balance that through three practices.`,
-    pillars: [
-      {
-        key: "Principles",
-        tag: "Guardrails",
-        title: "Clear Principles",
-        text: `First, Principles: We agree a short set of architecture principles, like API-first, cloud-native, and secure by design. Squads decide freely inside those guardrails.`,
-        cues: ["principles", "guardrails", "api-first", "secure by design"],
-      },
-      {
-        key: "Decision Records",
-        tag: "ADRs",
-        title: "Lightweight Decision Records",
-        text: `Second, Decision Records: Significant decisions are written as short architecture decision records, with the options, the trade-offs, and the reason. A light review forum looks only at decisions that cross teams.`,
-        cues: ["decision records", "ADR", "review", "options"],
-      },
-      {
-        key: "Fitness",
-        tag: "Measure",
-        title: "Measure Architecture Health",
-        text: `Third, Fitness: We track measurable signals, like coupling between services, performance, and security findings, so architecture quality is visible, not a matter of opinion.`,
-        cues: ["fitness", "coupling", "measurable", "health"],
-      },
-    ],
-    close: `That keeps teams autonomous while the platform stays coherent and secure.`,
-  },
-  {
-    id: "incident",
-    category: "Technical",
-    topic: "Major production incident",
-    question: "Walk me through how you handle a major production incident.",
-    opening: `In a major incident, calm structure matters more than speed. I follow three steps.`,
-    pillars: [
-      {
-        key: "Stabilize",
-        tag: "Incident command",
-        title: "Stabilize First",
-        text: `First, Stabilize: We open an incident bridge with one clear incident commander. The priority is restoring service, through rollback, failover, or a workaround, before searching for the root cause.`,
-        cues: ["stabilize", "commander", "rollback", "failover", "restore"],
-      },
-      {
-        key: "Communicate",
-        tag: "Regular updates",
-        title: "Communicate on a Cadence",
-        text: `Second, Communicate: Business leaders, client teams, and where needed regulators get short, regular updates: what happened, the impact, and the next update time. Silence creates more pressure than bad news.`,
-        cues: ["communicate", "updates", "regulators", "cadence"],
-      },
-      {
-        key: "Learn",
-        tag: "Blameless review",
-        title: "Learn Without Blame",
-        text: `Third, Learn: Within days we run a blameless post-incident review, find the real root cause, and track the actions to closure, like better monitoring, automated tests, or a design fix.`,
-        cues: ["learn", "blameless", "root cause", "post-incident", "postmortem"],
-      },
-    ],
-    close: `That restores trust quickly and makes the platform stronger after every incident.`,
-  },
-  {
-    id: "engineering-metrics",
-    category: "Technical",
-    topic: "Measuring engineering performance",
-    question: "How do you measure the performance of your engineering and delivery teams?",
-    opening: `I measure what predicts good outcomes, not just activity. I look at three layers.`,
-    pillars: [
-      {
-        key: "Flow",
-        tag: "DORA",
-        title: "Delivery Flow",
-        text: `First, Flow: I use the DORA metrics: deployment frequency and lead time for changes. They show how quickly value moves from idea to production.`,
-        cues: ["flow", "DORA", "deployment frequency", "lead time"],
-      },
-      {
-        key: "Stability",
-        tag: "Change failure",
-        title: "Quality and Stability",
-        text: `Second, Stability: Change failure rate, time to restore service, and escaped defects. Speed without stability is not real velocity.`,
-        cues: ["stability", "change failure", "restore", "escaped"],
-      },
-      {
-        key: "Outcomes",
-        tag: "Business KPIs",
-        title: "Business Outcomes",
-        text: `Third, Outcomes: Every team links its work to a business measure, like client adoption, cycle-time savings, or cost to serve. Metrics are for learning, never for punishing teams.`,
-        cues: ["outcomes", "adoption", "business measure", "kpi"],
-      },
-    ],
-    close: `Together they tell me if we are fast, safe, and actually creating value.`,
-  },
-  {
-    id: "tech-debt",
-    category: "Technical",
-    topic: "Technical debt",
-    question: "How do you balance technical debt against new feature delivery?",
-    opening: `Technical debt is a business risk, so I manage it like one. I use three practices.`,
-    pillars: [
-      {
-        key: "Visible",
-        tag: "Debt register",
-        title: "Make It Visible",
-        text: `First, Make it Visible: We keep a technical debt register with the impact of each item in business terms, like slower releases, outage risk, or security exposure.`,
-        cues: ["visible", "register", "impact"],
-      },
-      {
-        key: "Capacity",
-        tag: "15–20%",
-        title: "Reserve Capacity",
-        text: `Second, Reserve Capacity: Each squad protects a fixed share of every sprint, typically fifteen to twenty percent, for debt and platform health, so it never waits for a perfect moment.`,
-        cues: ["capacity", "percent", "reserve", "protect"],
-      },
-      {
-        key: "Risk-Based",
-        tag: "Prioritize",
-        title: "Prioritize by Risk",
-        text: `Third, Risk-Based: We fix first what blocks delivery or creates security and regulatory exposure. Debt that costs nothing today can wait.`,
-        cues: ["risk", "prioritize", "exposure", "regulatory"],
-      },
-    ],
-    close: `That keeps the platform healthy without stopping the business roadmap.`,
-  },
-  {
-    id: "iam",
-    category: "Technical",
-    topic: "Identity & access management",
-    question: "How would you strengthen identity and access management on a wealth or banking platform?",
-    opening: `Identity is the new security perimeter. I strengthen it in three layers.`,
-    pillars: [
-      {
-        key: "Least Privilege",
-        tag: "RBAC",
-        title: "Least Privilege",
-        text: `First, Least Privilege: Role-based access, with people getting only what their job needs, plus regular access recertification so old access is removed.`,
-        cues: ["least privilege", "role-based", "recertification", "RBAC"],
-      },
-      {
-        key: "Strong Authentication",
-        tag: "MFA + SSO",
-        title: "Strong Authentication",
-        text: `Second, Strong Authentication: Multi-factor authentication and single sign-on for advisors, employees, and clients, with extra controls for privileged and high-value actions.`,
-        cues: ["authentication", "multi-factor", "MFA", "single sign-on"],
-      },
-      {
-        key: "Monitor",
-        tag: "Privileged access",
-        title: "Monitor and Respond",
-        text: `Third, Monitor: Privileged accounts are vaulted, and every sensitive action is logged and monitored, so unusual behaviour is caught and investigated quickly.`,
-        cues: ["monitor", "privileged", "vaulted", "logged"],
-      },
-    ],
-    close: `That protects client assets and keeps us audit-ready for regulators.`,
-  },
-  // ── Business ──
-  {
-    id: "turnaround",
-    category: "Business",
-    topic: "Turning around a troubled program",
-    question: "How do you turn around a program that is late, over budget, or losing stakeholder trust?",
-    opening: `When a program is in trouble, I focus on facts before fixes. I follow three steps.`,
-    pillars: [
-      {
-        key: "Diagnose",
-        tag: "Two weeks",
-        title: "Diagnose Honestly",
-        text: `First, Diagnose: In the first two weeks I talk to the team, the vendors, and the sponsors, and review the plan against real velocity. I find the true critical path and the real blockers.`,
-        cues: ["diagnose", "critical path", "real", "review"],
-      },
-      {
-        key: "Reset",
-        tag: "Scope & plan",
-        title: "Reset the Plan",
-        text: `Second, Reset: I present a realistic re-plan with clear options: reduce scope, add capacity, or move the date. Leadership chooses with full information.`,
-        cues: ["reset", "re-plan", "options", "scope"],
-      },
-      {
-        key: "Rebuild Trust",
-        tag: "Weekly cadence",
-        title: "Rebuild Trust",
-        text: `Third, Rebuild Trust: Short weekly updates, early warnings, and small visible wins. Trust comes back when people see promises kept, week after week.`,
-        cues: ["trust", "weekly", "wins", "promises"],
-      },
-    ],
-    close: `Honest diagnosis, a credible plan, and steady delivery turn a troubled program around.`,
-  },
-  {
-    id: "vendors",
-    category: "Business",
-    topic: "Managing vendors",
-    question: "How do you manage vendors and delivery partners to get the outcomes you need?",
-    opening: `I treat strong vendors as partners, but I manage them on outcomes. I rely on three things.`,
-    pillars: [
-      {
-        key: "Outcomes",
-        tag: "SLAs",
-        title: "Contract for Outcomes",
-        text: `First, Outcomes: Contracts and statements of work are tied to deliverables, quality levels, and service levels, not just hours billed.`,
-        cues: ["outcomes", "contract", "service levels", "SLA", "deliverables"],
-      },
-      {
-        key: "Joint Governance",
-        tag: "One team",
-        title: "Joint Governance",
-        text: `Second, Joint Governance: Vendor leads join our delivery cadence: the same stand-ups, risk reviews, and dashboards. One team, one plan.`,
-        cues: ["governance", "joint", "one team", "cadence"],
-      },
-      {
-        key: "Performance",
-        tag: "Scorecard",
-        title: "Performance and Escalation",
-        text: `Third, Performance: A quarterly scorecard on quality, timeliness, and value, with a clear escalation path. Good partners earn more work; poor performance is addressed early.`,
-        cues: ["performance", "scorecard", "escalation", "quarterly"],
-      },
-    ],
-    close: `That gives us the speed of partners with the accountability of an internal team.`,
-  },
-  {
-    id: "bad-news",
-    category: "Business",
-    topic: "Delivering bad news to executives",
-    question: "How do you tell senior executives that a key initiative is going to be late?",
-    opening: `Bad news does not get better with age. I handle it in three steps.`,
-    pillars: [
-      {
-        key: "Early",
-        tag: "No surprises",
-        title: "Raise It Early",
-        text: `First, Early: As soon as the data shows real risk to the date, I raise it. Executives can handle bad news; what they can't handle is surprises.`,
-        cues: ["early", "surprises", "as soon"],
-      },
-      {
-        key: "Facts & Impact",
-        tag: "Root cause",
-        title: "Facts and Impact",
-        text: `Second, Facts and Impact: I explain what happened, why, and what it means for clients, revenue, or regulatory commitments, without excuses or blame.`,
-        cues: ["facts", "impact", "excuses"],
-      },
-      {
-        key: "Options",
-        tag: "Recommendation",
-        title: "Options and a Recommendation",
-        text: `Third, Options: I bring two or three recovery options with their trade-offs, and my clear recommendation, so the conversation moves straight to a decision.`,
-        cues: ["options", "recommendation", "recovery", "decision"],
-      },
-    ],
-    close: `Executives trust the leader who brings problems early, with a plan.`,
-  },
-  {
-    id: "change-adoption",
+    id: "ex-mistake",
     category: "Leadership",
-    topic: "Leading change",
-    question: "How do you lead a large change, like an agile or digital transformation, so that it actually sticks?",
-    opening: `Most transformations fail on people, not process. I lead change through three levers.`,
+    topic: "A mistake you learned from",
+    question: "Tell me about a mistake you made and what you learned.",
+    opening: `Early in my career I made a mistake that taught me a lesson I still use. I'll share it in three parts.`,
     pillars: [
       {
-        key: "Why",
-        tag: "Vision",
-        title: "Explain the Why",
-        text: `First, Why: I explain clearly why the change matters for clients and for the team, and what will be different for each person. People support what they understand.`,
-        cues: ["vision", "understand", "matters"],
+        key: "Own",
+        tag: "No excuses",
+        title: "Own It",
+        text: `First, Own: I [describe the mistake briefly]. When I saw it, I told my manager straight away instead of hoping no one would notice.`,
+        cues: ["own", "mistake", "told", "responsibility"],
       },
       {
-        key: "Champions",
-        tag: "Pilot teams",
-        title: "Start with Champions",
-        text: `Second, Champions: I start with pilot teams and respected champions, prove it works, and let their success pull others in, instead of forcing a big-bang rollout.`,
-        cues: ["champions", "pilot", "success", "pull"],
+        key: "Fix",
+        tag: "Act fast",
+        title: "Fix It",
+        text: `Second, Fix: I put a plan in place the same day to limit the impact, and we [the fix and the result].`,
+        cues: ["fix", "plan", "impact", "resolved"],
       },
       {
-        key: "Reinforce",
-        tag: "Measure",
-        title: "Measure and Reinforce",
-        text: `Third, Reinforce: We measure adoption and results, celebrate progress publicly, and remove the old processes, so people can't slip back.`,
-        cues: ["reinforce", "measure", "adoption", "celebrate"],
+        key: "Prevent",
+        tag: "New habit",
+        title: "Prevent It",
+        text: `Third, Prevent: I changed how I work. Now I [the new habit or check], and it hasn't happened again.`,
+        cues: ["prevent", "changed", "habit", "check"],
       },
     ],
-    close: `When people understand it, see it work, and feel it rewarded, change sticks.`,
+    close: `Mistakes happen; what matters is how fast you own them and what you change.`,
+  },
+  {
+    id: "ex-your-questions",
+    category: "Business",
+    topic: "Your questions for us",
+    question: "Do you have any questions for us?",
+    opening: `Yes, I have three questions.`,
+    pillars: [
+      {
+        key: "Success",
+        tag: "First year",
+        title: "What Success Looks Like",
+        text: `First, Success: What would a great first year in this role look like to you?`,
+        cues: ["success", "first year", "great"],
+      },
+      {
+        key: "Challenge",
+        tag: "Biggest problem",
+        title: "The Biggest Challenge",
+        text: `Second, Challenge: What is the biggest challenge the team is facing right now?`,
+        cues: ["challenge", "facing", "problem"],
+      },
+      {
+        key: "Team",
+        tag: "Culture",
+        title: "The Team",
+        text: `Third, Team: How would you describe the team I'd be working with, and how do they like to work?`,
+        cues: ["team", "culture", "describe"],
+      },
+    ],
+    close: `Thank you, that helps me picture how I'd add value from day one.`,
   },
   // ── Topics ──
   {
@@ -972,7 +414,7 @@ export interface LeadershipState {
   library: AnswerCard[];
   /** From onboarding: the learner's profession, used to filter library content. */
   profession?: string;
-  /** Show the built-in example interview answers (written for a technology delivery leader). */
+  /** Show the built-in example interview answers (default: only until you have answers of your own). */
   showExamples?: boolean;
 }
 
@@ -1012,6 +454,12 @@ export function loadState(): LeadershipState {
     // Cards saved before categories existed.
     s.custom = s.custom.map((c) => ({ ...c, category: c.category ?? "Business" }));
     for (const id of Object.keys(s.overrides)) s.overrides[id] = { ...s.overrides[id], category: s.overrides[id].category ?? DEFAULT_CARDS.find((d) => d.id === id)?.category ?? "Business" };
+    // Edits to built-in answers that no longer ship with the app become the learner's own cards (same id, so progress stays).
+    for (const [id, card] of Object.entries(s.overrides)) {
+      if (DEFAULT_CARDS.some((d) => d.id === id)) continue;
+      if (!s.custom.some((c) => c.id === id)) s.custom.push({ ...card, custom: true });
+      delete s.overrides[id];
+    }
     return s;
   } catch {
     return emptyState();
@@ -1028,8 +476,8 @@ export function saveState(s: LeadershipState) {
 
 /** Raw cards, with `{company}` placeholders intact (for editing). */
 export function rawCards(s: LeadershipState): AnswerCard[] {
-  // Built-in interview answers are examples for a technology leader; other professions get their own generated set.
-  const showExamples = s.showExamples ?? (!s.profession || s.profession === "technology");
+  // Built-in interview answers are neutral examples; once the learner has their own answers, they step aside.
+  const showExamples = s.showExamples ?? !s.custom.some((c) => INTERVIEW_CATEGORIES.includes(c.category));
   const defaults = DEFAULT_CARDS.filter((c) => showExamples || !INTERVIEW_CATEGORIES.includes(c.category)).map((c) => s.overrides[c.id] ?? c);
   const library = (s.library ?? []).filter((c) => !s.profession || !c.professions?.length || c.professions.includes(s.profession));
   return [...defaults, ...s.custom, ...library];
@@ -1151,7 +599,7 @@ export function streak(s: LeadershipState): number {
 /** Rule-of-three prompts: think in threes and you're never stuck for what comes next. */
 export const SPRINT_PROMPTS: string[] = [
   "Three reasons large programs miss their deadlines.",
-  "Three things you would do in your first week as an AVP.",
+  "Three things you would do in your first week as a new leader.",
   "Three ways to rebuild trust with an unhappy business partner.",
   "Three signs a squad is about to burn out.",
   "Three questions you ask before approving a business case.",
@@ -1352,4 +800,35 @@ export function draftToCard(title: string, source: string, d: TopicDraft): Answe
     source,
     custom: true,
   };
+}
+
+// ── Import / export of a learner's own answers ─────────────────────────────
+
+export interface AnswersFile {
+  type: "ceo-voice-answers";
+  version: 1;
+  cards: AnswerCard[];
+}
+
+function validCard(c: unknown): c is AnswerCard {
+  const x = c as AnswerCard;
+  return !!x && typeof x.id === "string" && typeof x.question === "string" && typeof x.opening === "string" && Array.isArray(x.pillars) && typeof x.close === "string";
+}
+
+/** Adds cards from an answers file. Cards already in the state (same id) are kept as they are. */
+export function importAnswers(s: LeadershipState, file: unknown): { state: LeadershipState; added: number; skipped: number } {
+  const cards = (file as Partial<AnswersFile>)?.cards;
+  if (!Array.isArray(cards)) throw new Error("That file isn't a CEO Voice answers file.");
+  const ok = cards.filter(validCard).slice(0, 200);
+  if (!ok.length) throw new Error("No answers found in that file.");
+  const have = new Set([...s.custom.map((c) => c.id), ...DEFAULT_CARDS.map((c) => c.id)]);
+  const fresh = ok
+    .filter((c) => !have.has(c.id))
+    .map((c) => ({ ...c, category: c.category ?? "Business", pillars: c.pillars.map((p) => ({ ...p, cues: Array.isArray(p.cues) ? p.cues : [] })), custom: true }));
+  return { state: { ...s, custom: [...s.custom, ...fresh] }, added: fresh.length, skipped: ok.length - fresh.length };
+}
+
+/** The learner's own interview answers, as a file they can keep or move. */
+export function exportAnswers(s: LeadershipState): AnswersFile {
+  return { type: "ceo-voice-answers", version: 1, cards: s.custom.filter((c) => INTERVIEW_CATEGORIES.includes(c.category)) };
 }
